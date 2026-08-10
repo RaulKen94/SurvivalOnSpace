@@ -1,0 +1,434 @@
+/* ============================================
+   STILI BASE
+   ============================================ */
+html, body {
+  height: 100%;
+  height: -webkit-fill-available;
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.mobile-container {
+  height: 100vh;
+  height: 100dvh;
+}
+
+/* ============================================
+   ANIMAZIONI
+   ============================================ */
+@keyframes bounceUp {
+  0% {
+    transform: translateY(0) scale(0.8);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-15px) scale(1.1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-50px) scale(0.9);
+    opacity: 0;
+  }
+}
+
+.animate-bounce-up {
+  animation: bounceUp 1s cubic-bezier(0.25, 1, 0.50, 1) forwards;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.2s ease-in-out;
+}
+
+@keyframes redFlash {
+  0%, 100% {
+    background-color: rgba(15, 23, 42, 1);
+  }
+  50% {
+    background-color: rgba(127, 29, 29, 0.3);
+  }
+}
+
+.animate-red-flash {
+  animation: redFlash 0.8s ease-in-out 2;
+}
+
+/* ============================================
+   SCROLLBAR PERSONALIZZATA
+   ============================================ */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.5);
+  border-radius: 4px;
+}
+
+/* ============================================
+   STATUS ICON ENTER
+   ============================================ */
+.status-icon-enter {
+  animation: bounceUp 0.3s ease-out;
+}
+
+/* ============================================
+   POCKET INFO MODAL
+   ============================================ */
+#pocket-info-modal .bg-slate-900 {
+  max-width: 280px;
+}
+
+/* ============================================
+   TOAST NOTIFICATIONS
+   ============================================ */
+#notification-toast {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ============================================
+   TOOLTIP LONG PRESS
+   ============================================ */
+#item-info-toast {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: opacity 0.2s ease;
+}
+
+/* ============================================
+   MODALI
+   ============================================ */
+#last-mission-recap-modal,
+#loot-info-modal,
+#pocket-info-modal,
+#soft-layout-modal,
+#library-book-modal,
+#tech-info-modal,
+#inventory-modal,
+#meteo-doc-modal,
+#emporio-modal,
+#mission-explore-choice-modal,
+#mission-overload-modal,
+#stiva-full-modal,
+#mission-failed-modal,
+#stats-modal {
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================
+   EMOPRIO MODAL
+   ============================================ */
+#emporio-modal .bg-slate-900 {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ============================================
+   DAMAGE INDICATOR
+   ============================================ */
+#damage-indicator-container {
+  pointer-events: none;
+  z-index: 40;
+}
+
+#damage-indicator-container .animate-bounce-up {
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+}
+
+/* ============================================
+   COMBAT AREA
+   ============================================ */
+#combat-feedback-hit,
+#combat-feedback-miss {
+  transition: opacity 0.1s ease;
+}
+
+#combat-alien-sprite {
+  transition: transform 0.1s ease-out;
+}
+
+/* ============================================
+   NAVBAR
+   ============================================ */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 480px) {
+  #game-container header .grid-cols-4 {
+    gap: 0.5rem;
+  }
+  
+  #game-container header .grid-cols-2 {
+    gap: 0.5rem;
+  }
+  
+  .text-xl {
+    font-size: 1.1rem;
+  }
+  
+  .text-2xl {
+    font-size: 1.3rem;
+  }
+  
+  #btn-fire,
+  #btn-cerca {
+    width: 60px;
+    height: 60px;
+  }
+  
+  #btn-esplora {
+    width: 50px;
+    height: 50px;
+  }
+  
+  #combat-alien-sprite {
+    font-size: 3rem;
+  }
+}
+
+@media (max-width: 380px) {
+  #game-container header .grid-cols-4 {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+  }
+  
+  #hud-level {
+    font-size: 0.6rem;
+  }
+  
+  .text-[10px] {
+    font-size: 0.55rem;
+  }
+  
+  .text-xs {
+    font-size: 0.6rem;
+  }
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+.bg-slate-850 {
+  background-color: rgba(30, 41, 59, 0.8);
+}
+
+.border-slate-850 {
+  border-color: rgba(30, 41, 59, 0.8);
+}
+
+.bg-slate-750 {
+  background-color: rgba(51, 65, 85, 0.8);
+}
+
+.border-slate-750 {
+  border-color: rgba(51, 65, 85, 0.8);
+}
+
+/* ============================================
+   SMOOTH TRANSITIONS
+   ============================================ */
+#game-container {
+  transition: background-color 0.1s ease;
+}
+
+#regen-bar,
+#refill-bar {
+  transition: width 1s ease;
+}
+
+#hud-hp-bar,
+#hud-shield-bar,
+#hud-exp-bar {
+  transition: width 0.3s ease;
+}
+
+/* ============================================
+   SCROLLBAR PER MODALI MOBILE
+   ============================================ */
+@media (max-width: 640px) {
+  .custom-scrollbar {
+    scrollbar-width: thin;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 3px;
+  }
+}
+
+/* ============================================
+   DISABLED BUTTON STATES
+   ============================================ */
+button:disabled {
+  cursor: not-allowed;
+}
+
+button:disabled:hover {
+  transform: none !important;
+}
+
+/* ============================================
+   TOUCH MANIPULATION
+   ============================================ */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* ============================================
+   SELECTION DISABLE
+   ============================================ */
+.select-none {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* ============================================
+   ANIMATIONS FOR STATUS ICONS
+   ============================================ */
+.status-icon-enter {
+  animation: statusPopIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes statusPopIn {
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ============================================
+   MODAL BACKDROP
+   ============================================ */
+.fixed.inset-0.bg-slate-950\/80,
+.fixed.inset-0.bg-slate-950\/85,
+.fixed.inset-0.bg-slate-950\/90,
+.fixed.inset-0.bg-rose-950\/95 {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ============================================
+   GLOBAL SCORE DOTS
+   ============================================ */
+#global-score-tracker .w-2\.5.h-2\.5 {
+  transition: all 0.3s ease;
+}
+
+#global-score-tracker .bg-emerald-500 {
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+/* ============================================
+   ZONE CARDS HOVER
+   ============================================ */
+#zone-card-0,
+#zone-card-A1,
+#zone-card-A2,
+#zone-card-A3 {
+  transition: all 0.2s ease;
+}
+
+#zone-card-0:hover,
+#zone-card-A1:hover,
+#zone-card-A2:hover,
+#zone-card-A3:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================
+   EMPORIO DESTINATION LABELS
+   ============================================ */
+#emp-dest-zaino-label,
+#emp-dest-stiva-label {
+  transition: all 0.2s ease;
+}
+
+#emp-dest-zaino-label:hover,
+#emp-dest-stiva-label:hover {
+  background-color: rgba(30, 41, 59, 0.6);
+}
+
+/* ============================================
+   INVENTORY CARDS
+   ============================================ */
+#zaino-items-list .border,
+#stiva-items-list .border,
+#mission-zaino-items-list .border {
+  transition: all 0.15s ease;
+}
+
+#zaino-items-list .border:hover,
+#stiva-items-list .border:hover,
+#mission-zaino-items-list .border:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+/* ============================================
+   COOLDOWN BARS
+   ============================================ */
+#regen-bar,
+#refill-bar {
+  background: linear-gradient(90deg, rgba(239, 68, 68, 0.6), rgba(239, 68, 68, 1));
+  transition: width 1s linear;
+}
+
+#refill-bar {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.6), rgba(16, 185, 129, 1));
+}
+
+/* ============================================
+   BOOK MODAL
+   ============================================ */
+#library-book-modal .bg-slate-900 {
+  border-color: rgba(99, 102, 241, 0.4);
+}
+
+/* ============================================
+   SYNTHESIS GRID BUTTONS
+   ============================================ */
+#nave-synthesis-container button:not(:disabled):hover {
+  transform: scale(1.02);
+}
+
+#nave-synthesis-container .border-amber-400 {
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.1);
+}
