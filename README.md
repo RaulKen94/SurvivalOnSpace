@@ -1,7 +1,7 @@
 # 🚀 Survival on Space - Tactical RPG
 
-[![Version](https://img.shields.io/badge/version-3.0.3-blue.svg)](https://github.com/yourusername/survival-on-space)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-3.0.3-blue.svg)]()
+[![License: CC BY-NC 4.0](https://img.shields.io/badge/License-CC_BY--NC_4.0-green.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![Made with](https://img.shields.io/badge/made%20with-HTML%2FCSS%2FJS-orange.svg)](https://developer.mozilla.org/)
 
 > A mobile-first tactical turn-based survival RPG set in a sci-fi universe. Fight aliens, manage resources, upgrade your gear, and survive!
@@ -282,8 +282,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 <a name="italiano"></a>
 # 🇮🇹 Survival on Space - RPG Tattico
 
-[![Versione](https://img.shields.io/badge/versione-3.0.3-blue.svg)](https://github.com/yourusername/survival-on-space)
-[![Licenza](https://img.shields.io/badge/licenza-MIT-green.svg)](LICENSE)
+[![Versione](https://img.shields.io/badge/versione-3.0.3-blue.svg)]()
+[![Licenza: CC BY-NC 4.0](https://img.shields.io/badge/Licenza-CC_BY--NC_4.0-green.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
 [![Realizzato con](https://img.shields.io/badge/realizzato%20con-HTML%2FCSS%2FJS-orange.svg)](https://developer.mozilla.org/)
 
 > Un RPG tattico a turni di sopravvivenza per dispositivi mobili ambientato in un universo fantascientifico. Combatti alieni, gestisci risorse, potenzia il tuo equipaggiamento e sopravvivi!
