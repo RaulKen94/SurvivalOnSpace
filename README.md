@@ -22,7 +22,6 @@
 - [Game Mechanics](#game-mechanics)
 - [Development](#development)
 - [Contributing](#contributing)
-- [License](#license)
 
 ---
 
@@ -274,13 +273,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-## 📞 Contact
-
-- Issues: GitHub Issues (https://github.com/yourusername/survival-on-space/issues)
-- Discord: Join our server (https://discord.gg/your-invite)
-
----
-
 <div align="center">
   <sub>Built with ❤️ by the Survival on Space Team</sub>
 </div>
@@ -312,7 +304,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [Meccaniche di Gioco](#meccaniche-di-gioco-italiano)
 - [Sviluppo](#sviluppo-italiano)
 - [Contributi](#contributi-italiano)
-- [Licenza](#licenza-italiano)
 
 ---
 
@@ -572,13 +563,6 @@ Questo progetto è concesso in licenza MIT - vedi il file LICENSE per i dettagli
 - Icone ed emoji per gli elementi visivi
 - Tailwind CSS per lo sviluppo rapido UI
 - Tutti i playtester e i contributori
-
----
-
-## 📞 Contatti
-
-- Issue: GitHub Issues (https://github.com/yourusername/survival-on-space/issues)
-- Discord: Unisciti al nostro server (https://discord.gg/your-invite)
 
 ---
 
