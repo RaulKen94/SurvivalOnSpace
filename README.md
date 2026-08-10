@@ -144,7 +144,7 @@ live-server
 2. Enable GitHub Pages in repository settings
 3. Access via https://yourusername.github.io/survival-on-space/
 ---
-
+<a name="how-to-play"></a>
 ## 🎯 How to Play
 
 ### Quick Start Guide
