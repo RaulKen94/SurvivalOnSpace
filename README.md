@@ -24,7 +24,7 @@
 - [Contributing](#contributing)
 
 ---
-
+<a name="overview"></a>
 ## 🎮 Overview
 
 **Survival on Space** is a browser-based tactical RPG where you command a space marine fighting against alien infestations on Earth. Built with vanilla HTML, CSS, and JavaScript, it's designed for mobile-first gameplay with touch-friendly interfaces.
@@ -41,7 +41,7 @@ The game features:
 - Status effects and buffs
 
 ---
-
+<a name="features"></a>
 ## ✨ Features
 
 ### Core Gameplay
