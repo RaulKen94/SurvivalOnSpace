@@ -73,7 +73,7 @@ The game features:
 - **Cross-session**: Carry progress between game sessions
 
 ---
-
+<a name="screenshots"></a>
 ## 📸 Screenshots
 
 *(Add screenshots of your game here)*
@@ -83,7 +83,7 @@ The game features:
 | ![Map](screenshots/map.png) | ![Combat](screenshots/combat.png) | ![Inventory](screenshots/inventory.png) |
 
 ---
-
+<a name="tech-stack"></a>
 ## 🛠️ Tech Stack
 
 - **HTML5** - Structure
@@ -93,7 +93,7 @@ The game features:
 - **Local Storage** - Save/load functionality (via base64 codes)
 
 ---
-
+<a name="project-structure"></a>
 ## 📁 Project Structure
 
 survival-on-space/
@@ -117,7 +117,7 @@ survival-on-space/
 └── README.md              # This file
 
 ---
-
+<a name="installation"></a>
 ## 🚀 Installation
 
 ### Option 1: Direct Download
@@ -170,7 +170,7 @@ live-server
 - 💰 Save credits: Purchase items at Emporium strategically
 
 ---
-
+<a name="game-mechanics"></a>
 ## ⚙️ Game Mechanics
 
 ### Level System
@@ -205,7 +205,7 @@ live-server
 - Open Chest: 1 Key + 1 Chest → Fragments reward
 
 ---
-
+<a name="development"></a>
 ## 💻 Development
 
 ### Code Organization
@@ -240,7 +240,7 @@ Open browser console (F12) to access:
 - window.Survival.renderAll() - Force UI refresh
 
 ---
-
+<a name="contributing"></a>
 ## 🤝 Contributing
 
 Contributions are welcome! Here's how you can help:
