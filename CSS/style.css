@@ -1,434 +1,1137 @@
-/* ============================================
-   STILI BASE
-   ============================================ */
-html, body {
-  height: 100%;
-  height: -webkit-fill-available;
-  overflow: hidden;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
-  -webkit-user-select: none;
+/* style.css — Stile A: Tactical Sci-Fi HUD (Palette Ciano + Pesi Verde Fluo) */
+
+:root {
+  --bg-void: #050a12;
+  --bg-space: #070e1a;
+  --bg-panel: #0c1729;
+  --bg-panel-alt: #102038;
+  --bg-input: #08111f;
+
+  --cyan: #00e5ff;
+  --cyan-mid: #00b8d9;
+  --cyan-dim: #0b5b73;
+  --cyan-soft: #7eeeff;
+  --cyan-glow: rgba(0, 229, 255, 0.22);
+
+  --border-subtle: rgba(0, 229, 255, 0.22);
+  --border-strong: rgba(0, 229, 255, 0.55);
+
+  --text-main: #e6f4ff;
+  --text-muted: #8ea9c4;
+  --text-dim: #5d7894;
+
+  --weight-green: #39ff88;
+  --weight-green-bg: rgba(57, 255, 136, 0.12);
+
+  --hp-color: #ff4d6d;
+  --shield-color: #38bdf8;
+  --exp-color: #00e5ff;
+  --credits-color: #fbbf24;
+  --liquids-color: #c084fc;
+  --ammo-color: #cbd5e1;
+
+  --danger: #ff4d6d;
+  --warning: #f59e0b;
+  --success: #39ff88;
+
+  /* Colori dedicati equipaggiamento */
+  --equip-helmet: #f5c542;
+  --equip-suit: #7eeeff;
+  --equip-boots: #b86bff;
+  --equip-rifle-bg: #090d14;
+  --equip-rifle-border: #94a3b8;
+
+  --font-sans: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  --font-mono: 'Cascadia Mono', 'Consolas', 'JetBrains Mono', ui-monospace, monospace;
 }
 
-.mobile-container {
-  height: 100vh;
-  height: 100dvh;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-/* ============================================
-   ANIMAZIONI
-   ============================================ */
-@keyframes bounceUp {
-  0% {
-    transform: translateY(0) scale(0.8);
-    opacity: 0;
-  }
-  15% {
-    opacity: 1;
-    transform: translateY(-15px) scale(1.1);
-  }
-  80% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(-50px) scale(0.9);
-    opacity: 0;
-  }
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background-color: var(--bg-void);
+  background-image:
+    radial-gradient(circle at 18% 12%, rgba(0, 229, 255, 0.08), transparent 45%),
+    radial-gradient(circle at 84% 85%, rgba(0, 140, 200, 0.08), transparent 50%),
+    linear-gradient(180deg, #050a12 0%, #07101e 100%);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
 }
 
-.animate-bounce-up {
-  animation: bounceUp 1s cubic-bezier(0.25, 1, 0.50, 1) forwards;
+.hidden {
+  display: none !important;
 }
 
-@keyframes shake {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-4px);
-  }
-  75% {
-    transform: translateX(4px);
-  }
+.mono {
+  font-family: var(--font-mono);
 }
 
-.animate-shake {
-  animation: shake 0.2s ease-in-out;
+.weight-text {
+  color: var(--weight-green);
+  font-family: var(--font-mono);
+  font-weight: 700;
 }
 
-@keyframes redFlash {
-  0%, 100% {
-    background-color: rgba(15, 23, 42, 1);
-  }
-  50% {
-    background-color: rgba(127, 29, 29, 0.3);
-  }
+/* Finestra unica principale */
+.app-shell {
+  width: 100%;
+  max-width: 1100px;
+  min-height: 100vh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: rgba(7, 14, 26, 0.92);
+  border-left: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  box-shadow: 0 0 40px rgba(0, 229, 255, 0.08);
 }
 
-.animate-red-flash {
-  animation: redFlash 0.8s ease-in-out 2;
+/* Top HUD Bar */
+.hud-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: linear-gradient(180deg, #0b1628 0%, #081222 100%);
+  border-bottom: 1px solid var(--border-strong);
+  padding: 10px 14px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
 }
 
-/* ============================================
-   SCROLLBAR PERSONALIZZATA
-   ============================================ */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
+.hud-top-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 10px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+.hud-identity {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(71, 85, 105, 0.5);
+.hud-name {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--cyan-soft);
+  letter-spacing: 0.02em;
+}
+
+.hud-planet-pill {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid var(--border-subtle);
+  color: var(--cyan);
+}
+
+.hud-mission-flag {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 2px 8px;
   border-radius: 4px;
+  background: rgba(255, 77, 109, 0.16);
+  border: 1px solid rgba(255, 77, 109, 0.5);
+  color: #ff8fa3;
 }
 
-/* ============================================
-   STATUS ICON ENTER
-   ============================================ */
-.status-icon-enter {
-  animation: bounceUp 0.3s ease-out;
+.hud-currencies {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
 }
 
-/* ============================================
-   POCKET INFO MODAL
-   ============================================ */
-#pocket-info-modal .bg-slate-900 {
-  max-width: 280px;
+.hud-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: var(--bg-input);
+  border: 1px solid rgba(142, 169, 196, 0.22);
+  font-size: 0.82rem;
 }
 
-/* ============================================
-   TOAST NOTIFICATIONS
-   ============================================ */
-#notification-toast {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+.hud-chip-label {
+  color: var(--text-muted);
+  font-size: 0.75rem;
 }
 
-/* ============================================
-   TOOLTIP LONG PRESS
-   ============================================ */
-#item-info-toast {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  transition: opacity 0.2s ease;
+.hud-chip-val {
+  font-family: var(--font-mono);
+  font-weight: 700;
 }
 
-/* ============================================
-   MODALI
-   ============================================ */
-#last-mission-recap-modal,
-#loot-info-modal,
-#pocket-info-modal,
-#soft-layout-modal,
-#library-book-modal,
-#tech-info-modal,
-#inventory-modal,
-#meteo-doc-modal,
-#emporio-modal,
-#mission-explore-choice-modal,
-#mission-overload-modal,
-#stiva-full-modal,
-#mission-failed-modal,
-#stats-modal {
-  animation: modalFadeIn 0.2s ease-out;
+.val-credits { color: var(--credits-color); }
+.val-liquids { color: var(--liquids-color); }
+.val-ammo { color: var(--ammo-color); }
+
+.hud-bars-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
 }
 
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+.stat-meter {
+  background: var(--bg-input);
+  border: 1px solid rgba(0, 229, 255, 0.18);
+  border-radius: 6px;
+  padding: 6px 9px;
 }
 
-/* ============================================
-   EMOPRIO MODAL
-   ============================================ */
-#emporio-modal .bg-slate-900 {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+.stat-meter-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.76rem;
+  margin-bottom: 4px;
+  gap: 6px;
 }
 
-/* ============================================
-   DAMAGE INDICATOR
-   ============================================ */
-#damage-indicator-container {
-  pointer-events: none;
-  z-index: 40;
+.stat-meter-title {
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-#damage-indicator-container .animate-bounce-up {
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+.stat-meter-value {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--text-main);
 }
 
-/* ============================================
-   COMBAT AREA
-   ============================================ */
-#combat-feedback-hit,
-#combat-feedback-miss {
-  transition: opacity 0.1s ease;
+.progress-track {
+  width: 100%;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  display: flex;
 }
 
-#combat-alien-sprite {
-  transition: transform 0.1s ease-out;
+.progress-fill {
+  height: 100%;
+  transition: width 0.2s ease;
 }
 
-/* ============================================
-   NAVBAR
-   ============================================ */
-.pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
+.fill-exp { background: linear-gradient(90deg, #0091ad, #00e5ff); }
+.fill-hp { background: linear-gradient(90deg, #c9184a, #ff4d6d); }
+.fill-shield { background: linear-gradient(90deg, #0284c7, #38bdf8); }
+.fill-ammo { background: linear-gradient(90deg, #00a8c6, #7eeeff); }
+.fill-items { background: linear-gradient(90deg, #16a34a, #39ff88); }
+.fill-dd { background: linear-gradient(90deg, #0091ad, #00e5ff); }
+
+/* Tab Bar (4 tab da sx a dx: Mappa, Missione, Nave Spaziale, Opzioni) */
+.tab-bar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  padding: 10px 14px;
+  background: #081220;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-/* ============================================
-   RESPONSIVE
-   ============================================ */
-@media (max-width: 480px) {
-  #game-container header .grid-cols-4 {
-    gap: 0.5rem;
-  }
-  
-  #game-container header .grid-cols-2 {
-    gap: 0.5rem;
-  }
-  
-  .text-xl {
-    font-size: 1.1rem;
-  }
-  
-  .text-2xl {
-    font-size: 1.3rem;
-  }
-  
-  #btn-fire,
-  #btn-cerca {
-    width: 60px;
-    height: 60px;
-  }
-  
-  #btn-esplora {
-    width: 50px;
-    height: 50px;
-  }
-  
-  #combat-alien-sprite {
-    font-size: 3rem;
-  }
+.tab-btn {
+  position: relative;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  background: var(--bg-panel);
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
 }
 
-@media (max-width: 380px) {
-  #game-container header .grid-cols-4 {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-  }
-  
-  #hud-level {
-    font-size: 0.6rem;
-  }
-  
-  .text-[10px] {
-    font-size: 0.55rem;
-  }
-  
-  .text-xs {
-    font-size: 0.6rem;
-  }
+.tab-btn:hover:not(:disabled) {
+  border-color: var(--cyan);
+  color: var(--text-main);
+  background: var(--bg-panel-alt);
 }
 
-/* ============================================
-   UTILITY CLASSES
-   ============================================ */
-.bg-slate-850 {
-  background-color: rgba(30, 41, 59, 0.8);
+.tab-btn.active {
+  border-color: var(--cyan);
+  background: linear-gradient(180deg, rgba(0, 229, 255, 0.22) 0%, rgba(0, 184, 217, 0.08) 100%);
+  color: var(--cyan-soft);
+  box-shadow: 0 0 14px var(--cyan-glow), inset 0 0 0 1px rgba(0, 229, 255, 0.25);
 }
 
-.border-slate-850 {
-  border-color: rgba(30, 41, 59, 0.8);
-}
-
-.bg-slate-750 {
-  background-color: rgba(51, 65, 85, 0.8);
-}
-
-.border-slate-750 {
-  border-color: rgba(51, 65, 85, 0.8);
-}
-
-/* ============================================
-   SMOOTH TRANSITIONS
-   ============================================ */
-#game-container {
-  transition: background-color 0.1s ease;
-}
-
-#regen-bar,
-#refill-bar {
-  transition: width 1s ease;
-}
-
-#hud-hp-bar,
-#hud-shield-bar,
-#hud-exp-bar {
-  transition: width 0.3s ease;
-}
-
-/* ============================================
-   SCROLLBAR PER MODALI MOBILE
-   ============================================ */
-@media (max-width: 640px) {
-  .custom-scrollbar {
-    scrollbar-width: thin;
-  }
-  
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 3px;
-  }
-}
-
-/* ============================================
-   DISABLED BUTTON STATES
-   ============================================ */
-button:disabled {
+.tab-btn.locked-by-mission {
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
-button:disabled:hover {
-  transform: none !important;
+.tab-indicator {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  flex-shrink: 0;
 }
 
-/* ============================================
-   TOUCH MANIPULATION
-   ============================================ */
-.touch-manipulation {
-  touch-action: manipulation;
+/* Main Content Area */
+.tab-viewport {
+  flex: 1;
+  padding: 16px 14px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-/* ============================================
-   SELECTION DISABLE
-   ============================================ */
-.select-none {
-  -webkit-user-select: none;
-  user-select: none;
+.section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
 }
 
-/* ============================================
-   ANIMATIONS FOR STATUS ICONS
-   ============================================ */
-.status-icon-enter {
-  animation: statusPopIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+.section-title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--cyan-soft);
+  letter-spacing: 0.02em;
 }
 
-@keyframes statusPopIn {
-  0% {
-    transform: scale(0.5);
-    opacity: 0;
+.section-subtitle {
+  margin: 2px 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Cards & Grids */
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 14px;
+  box-shadow: inset 0 1px 0 rgba(0, 229, 255, 0.08);
+}
+
+.panel-highlight {
+  border-color: var(--border-strong);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.08), inset 0 1px 0 rgba(0, 229, 255, 0.14);
+}
+
+.panel-title {
+  margin: 0 0 10px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--cyan);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+/* Badges & Pills */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  border: 1px solid transparent;
+}
+
+.badge-cyan {
+  background: rgba(0, 229, 255, 0.12);
+  border-color: rgba(0, 229, 255, 0.35);
+  color: var(--cyan-soft);
+}
+
+.badge-step {
+  background: rgba(142, 169, 196, 0.12);
+  border-color: rgba(142, 169, 196, 0.32);
+  color: var(--text-muted);
+}
+
+.badge-ok {
+  background: rgba(57, 255, 136, 0.12);
+  border-color: rgba(57, 255, 136, 0.35);
+  color: var(--weight-green);
+}
+
+.badge-warn {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+
+.badge-danger {
+  background: rgba(255, 77, 109, 0.14);
+  border-color: rgba(255, 77, 109, 0.4);
+  color: #ff8fa3;
+}
+
+.badge-purple {
+  background: rgba(184, 107, 255, 0.14);
+  border-color: rgba(184, 107, 255, 0.4);
+  color: #d8b4fe;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 14px;
+  border-radius: 7px;
+  border: 1px solid var(--border-strong);
+  background: rgba(0, 229, 255, 0.14);
+  color: var(--cyan-soft);
+  font-family: var(--font-sans);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.08s ease;
+}
+
+.btn:hover:not(:disabled) {
+  background: rgba(0, 229, 255, 0.24);
+  border-color: var(--cyan);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn:disabled {
+  opacity: 0.48;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #00b8d9 0%, #008ca8 100%);
+  border-color: var(--cyan);
+  color: #03131d;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #00e5ff 0%, #00a8c6 100%);
+}
+
+.btn-ghost {
+  background: rgba(16, 32, 56, 0.65);
+  border-color: var(--border-subtle);
+  color: var(--text-main);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  border-color: var(--cyan);
+  color: var(--cyan-soft);
+}
+
+.btn-sm {
+  min-height: 32px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+}
+
+.btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Mappa: Lista nodi (Nave + Difficoltà 1..4) */
+.map-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 14px;
+  align-items: start;
+}
+
+.mission-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mission-option {
+  width: 100%;
+  text-align: left;
+  padding: 11px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-input);
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.mission-option:hover:not(.locked) {
+  border-color: var(--cyan);
+  background: var(--bg-panel-alt);
+}
+
+.mission-option.selected {
+  border-color: var(--cyan);
+  background: rgba(0, 229, 255, 0.12);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.16);
+}
+
+.mission-option.locked {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
+.mission-option-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.mission-option-name {
+  font-weight: 700;
+  font-size: 0.94rem;
+}
+
+.mission-option-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  font-size: 0.79rem;
+  color: var(--text-muted);
+}
+
+/* Tabella Drop Preview */
+.drop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.drop-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  background: var(--bg-input);
+  border: 1px solid rgba(0, 229, 255, 0.14);
+  font-size: 0.85rem;
+}
+
+.drop-row-left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.drop-row-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.drop-chance {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--cyan-soft);
+}
+
+/* Equipaggiamenti & Colori dedicati */
+.equip-card {
+  border-radius: 8px;
+  padding: 10px 11px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-left-width: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.equip-helmet {
+  border-color: rgba(245, 197, 66, 0.45);
+  border-left-color: var(--equip-helmet);
+}
+.equip-helmet .equip-slot-label,
+.equip-text-helmet {
+  color: var(--equip-helmet);
+}
+
+.equip-suit {
+  border-color: rgba(126, 238, 255, 0.45);
+  border-left-color: var(--equip-suit);
+}
+.equip-suit .equip-slot-label,
+.equip-text-suit {
+  color: var(--equip-suit);
+}
+
+.equip-boots {
+  border-color: rgba(184, 107, 255, 0.45);
+  border-left-color: var(--equip-boots);
+}
+.equip-boots .equip-slot-label,
+.equip-text-boots {
+  color: var(--equip-boots);
+}
+
+.equip-rifle {
+  background: var(--equip-rifle-bg);
+  border-color: var(--equip-rifle-border);
+  border-left-color: #e2e8f0;
+}
+.equip-rifle .equip-slot-label,
+.equip-text-rifle {
+  color: #e2e8f0;
+}
+
+.equip-slot-label {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.equip-model-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.equip-stats-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+/* Inventario preview (Zaino e Stiva) */
+.inv-item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.inv-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 9px;
+  border-radius: 6px;
+  background: var(--bg-input);
+  border: 1px solid rgba(142, 169, 196, 0.16);
+  font-size: 0.84rem;
+}
+
+/* Griglia Moduli Nave & Location Pianeta */
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.module-card {
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 11px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.module-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.module-card-title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.module-card-desc {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+/* Form controls (Opzioni) */
+.code-box {
+  width: 100%;
+  padding: 10px;
+  border-radius: 7px;
+  background: #040911;
+  border: 1px solid var(--border-subtle);
+  color: var(--cyan-soft);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.4;
+  word-break: break-all;
+  resize: vertical;
+  min-height: 78px;
+}
+
+.input-field {
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 11px;
+  border-radius: 7px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  font-family: var(--font-sans);
+  font-size: 0.92rem;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 2px rgba(0, 229, 255, 0.16);
+}
+
+.feedback-line {
+  margin-top: 8px;
+  font-size: 0.83rem;
+  font-weight: 600;
+}
+
+.feedback-ok { color: var(--weight-green); }
+.feedback-err { color: var(--danger); }
+
+.empty-state {
+  text-align: center;
+  padding: 28px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: rgba(3, 8, 16, 0.82);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.modal-card {
+  width: 100%;
+  max-width: 620px;
+  max-height: 86vh;
+  overflow-y: auto;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-strong);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 12px 42px rgba(0, 0, 0, 0.7);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--cyan-soft);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: var(--bg-input);
+  border: 1px solid rgba(0, 229, 255, 0.14);
+  font-size: 0.85rem;
+}
+
+.stat-row-label {
+  color: var(--text-muted);
+}
+
+.stat-row-val {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--cyan-soft);
+}
+
+/* Toast */
+.toast-container {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 340px;
+  pointer-events: none;
+}
+
+.toast {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #0d1d33;
+  border: 1px solid var(--cyan);
+  color: var(--text-main);
+  font-size: 0.86rem;
+  font-weight: 600;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.55);
+}
+
+.toast-ok {
+  border-color: var(--weight-green);
+  color: var(--weight-green);
+}
+
+.toast-err {
+  border-color: var(--danger);
+  color: #ff99ac;
+}
+
+/* Bottoni extra Step 2 & Step 3 */
+.btn-danger {
+  background: rgba(255, 77, 109, 0.16);
+  border-color: rgba(255, 77, 109, 0.58);
+  color: #ff99ac;
+}
+.btn-danger:hover:not(:disabled) {
+  background: rgba(255, 77, 109, 0.28);
+  border-color: var(--danger);
+}
+
+.btn-warn {
+  background: rgba(245, 158, 11, 0.16);
+  border-color: rgba(245, 158, 11, 0.55);
+  color: #fcd34d;
+}
+.btn-warn:hover:not(:disabled) {
+  background: rgba(245, 158, 11, 0.28);
+  border-color: var(--warning);
+}
+
+.btn-success {
+  background: linear-gradient(180deg, #22c55e 0%, #15803d 100%);
+  border-color: var(--weight-green);
+  color: #03150a;
+}
+.btn-success:hover:not(:disabled) {
+  background: linear-gradient(180deg, #39ff88 0%, #16a34a 100%);
+}
+
+.btn-combat-big {
+  width: 100%;
+  min-height: 52px;
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+}
+
+/* Equip rotto & azioni */
+.equip-card.equip-broken {
+  box-shadow: inset 0 0 0 1px rgba(255, 77, 109, 0.45);
+}
+
+.equip-card-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.storage-equip-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* Inventario interattivo & trasferimenti */
+.ammo-transfer-bar {
+  margin-top: 10px;
+  padding: 9px 10px;
+  border-radius: 7px;
+  background: rgba(8, 17, 31, 0.85);
+  border: 1px solid rgba(0, 229, 255, 0.16);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ammo-transfer-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.inv-item-row {
+  flex-wrap: wrap;
+}
+
+.inv-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 150px;
+  flex: 1;
+}
+
+.inv-item-sub {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.inv-item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Combattimento a Turni (Tab Missione) */
+.combat-banner {
+  background: linear-gradient(180deg, rgba(16, 32, 56, 0.95) 0%, rgba(8, 17, 31, 0.98) 100%);
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.combat-counters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.combat-stat-box {
+  background: var(--bg-input);
+  border: 1px solid rgba(0, 229, 255, 0.22);
+  border-radius: 8px;
+  padding: 8px 10px;
+  text-align: center;
+}
+
+.combat-stat-label {
+  display: block;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.combat-stat-value {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--cyan-soft);
+}
+
+.combat-stat-value.aliens-val {
+  color: #ff8fa3;
+}
+
+.combat-log {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.combat-log-entry {
+  padding: 6px 9px;
+  border-radius: 6px;
+  background: var(--bg-input);
+  border-left: 3px solid var(--cyan);
+  font-size: 0.82rem;
+  color: var(--text-main);
+}
+
+.combat-log-turn {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--cyan);
+  margin-right: 6px;
+}
+
+/* Modali Recap & Riparazione */
+.recap-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.target-pick-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.target-pick-btn {
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.target-pick-btn:hover {
+  border-color: var(--cyan);
+  background: var(--bg-panel-alt);
+}
+
+/* Responsive Mobile & Tablet */
+@media (max-width: 860px) {
+  .map-layout {
+    grid-template-columns: 1fr;
   }
-  100% {
-    transform: scale(1);
-    opacity: 1;
+  .grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .module-grid,
+  .storage-equip-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
-/* ============================================
-   MODAL BACKDROP
-   ============================================ */
-.fixed.inset-0.bg-slate-950\/80,
-.fixed.inset-0.bg-slate-950\/85,
-.fixed.inset-0.bg-slate-950\/90,
-.fixed.inset-0.bg-rose-950\/95 {
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-/* ============================================
-   GLOBAL SCORE DOTS
-   ============================================ */
-#global-score-tracker .w-2\.5.h-2\.5 {
-  transition: all 0.3s ease;
-}
-
-#global-score-tracker .bg-emerald-500 {
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
-}
-
-/* ============================================
-   ZONE CARDS HOVER
-   ============================================ */
-#zone-card-0,
-#zone-card-A1,
-#zone-card-A2,
-#zone-card-A3 {
-  transition: all 0.2s ease;
-}
-
-#zone-card-0:hover,
-#zone-card-A1:hover,
-#zone-card-A2:hover,
-#zone-card-A3:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-/* ============================================
-   EMPORIO DESTINATION LABELS
-   ============================================ */
-#emp-dest-zaino-label,
-#emp-dest-stiva-label {
-  transition: all 0.2s ease;
-}
-
-#emp-dest-zaino-label:hover,
-#emp-dest-stiva-label:hover {
-  background-color: rgba(30, 41, 59, 0.6);
-}
-
-/* ============================================
-   INVENTORY CARDS
-   ============================================ */
-#zaino-items-list .border,
-#stiva-items-list .border,
-#mission-zaino-items-list .border {
-  transition: all 0.15s ease;
-}
-
-#zaino-items-list .border:hover,
-#stiva-items-list .border:hover,
-#mission-zaino-items-list .border:hover {
-  border-color: rgba(99, 102, 241, 0.3);
-}
-
-/* ============================================
-   COOLDOWN BARS
-   ============================================ */
-#regen-bar,
-#refill-bar {
-  background: linear-gradient(90deg, rgba(239, 68, 68, 0.6), rgba(239, 68, 68, 1));
-  transition: width 1s linear;
-}
-
-#refill-bar {
-  background: linear-gradient(90deg, rgba(16, 185, 129, 0.6), rgba(16, 185, 129, 1));
-}
-
-/* ============================================
-   BOOK MODAL
-   ============================================ */
-#library-book-modal .bg-slate-900 {
-  border-color: rgba(99, 102, 241, 0.4);
-}
-
-/* ============================================
-   SYNTHESIS GRID BUTTONS
-   ============================================ */
-#nave-synthesis-container button:not(:disabled):hover {
-  transform: scale(1.02);
-}
-
-#nave-synthesis-container .border-amber-400 {
-  box-shadow: 0 0 20px rgba(251, 191, 36, 0.1);
+@media (max-width: 600px) {
+  .hud-header {
+    padding: 8px 10px;
+  }
+  .hud-bars-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .tab-bar {
+    padding: 8px 10px;
+    gap: 5px;
+  }
+  .tab-btn {
+    font-size: 0.78rem;
+    padding: 6px 4px;
+    min-height: 42px;
+  }
+  .tab-viewport {
+    padding: 12px 10px 24px;
+    gap: 12px;
+  }
+  .grid-2,
+  .grid-4,
+  .module-grid,
+  .storage-equip-grid,
+  .stats-grid,
+  .recap-summary-grid {
+    grid-template-columns: 1fr;
+  }
+  .combat-counters {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .combat-stat-value {
+    font-size: 1rem;
+  }
+  .toast-container {
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+    max-width: none;
+  }
 }
