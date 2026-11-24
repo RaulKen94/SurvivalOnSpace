@@ -91,7 +91,7 @@
       active: false,
       selectedDifficulty: 0,
       planetId: null,
-      turn: 1,
+      turn: 0,
       aliensTotal: 0,
       aliensLeft: 0,
       completedReady: false,
@@ -99,6 +99,9 @@
       shotsFired: 0,
       damageTaken: 0,
       levelsGained: 0,
+      statuses: [],
+      weather: null,
+      lastShot: null,
       log: []
     };
   }
@@ -942,7 +945,7 @@
       active: true,
       selectedDifficulty: diff,
       planetId: planet.id,
-      turn: 1,
+      turn: 0,
       aliensTotal: aliensTotal,
       aliensLeft: aliensTotal,
       completedReady: false,
@@ -950,6 +953,9 @@
       shotsFired: 0,
       damageTaken: 0,
       levelsGained: 0,
+      statuses: [],
+      weather: null,
+      lastShot: null,
       log: []
     };
     pushMissionLog('Missione avviata su ' + planet.name + ' (Diff. ' + diff + ' — ' + missionCfg.name + '): ' + aliensTotal + ' alieni da abbattere.');
@@ -958,7 +964,71 @@
     return { ok: true };
   }
 
-  function resolveEnemyCounterattack(planet, missionCfg) {
+  function applyDamageToPlayer(rawDamage) {
+    var dmg = Math.max(0, toInt(rawDamage, 0));
+    var shieldAbsorbed = Math.min(S.state.player.shield, dmg);
+    var hpLost = dmg - shieldAbsorbed;
+
+    S.state.player.shield -= shieldAbsorbed;
+    S.state.player.hp = Math.max(0, S.state.player.hp - hpLost);
+    S.state.mission.damageTaken += dmg;
+
+    return {
+      damage: dmg,
+      shieldAbsorbed: shieldAbsorbed,
+      hpLost: hpLost
+    };
+  }
+
+  function triggerMissionDefeat(planet, missionCfg) {
+    var expLost = Math.floor((S.state.player.exp * S.COMBAT_RULES.deathExpLossPct) / 100);
+    var creditsLost = Math.floor((S.state.player.credits * S.COMBAT_RULES.deathCreditsLossPct) / 100);
+    S.state.player.exp = Math.max(0, S.state.player.exp - expLost);
+    S.state.player.credits = Math.max(0, S.state.player.credits - creditsLost);
+
+    var lvData = getLevelData(S.state.player.level);
+    S.state.player.hp = Math.min(S.COMBAT_RULES.deathRespawnHp, lvData.maxHp);
+    S.state.player.shield = S.COMBAT_RULES.deathRespawnShield;
+    S.state.stats.deaths += 1;
+
+    var summary = {
+      planetName: planet.name,
+      difficulty: missionCfg.difficulty,
+      missionName: missionCfg.name,
+      turn: S.state.mission.turn,
+      aliensKilled: S.state.mission.aliensTotal - S.state.mission.aliensLeft,
+      aliensTotal: S.state.mission.aliensTotal,
+      expLost: expLost,
+      creditsLost: creditsLost,
+      respawnHp: S.state.player.hp
+    };
+
+    S.state.mission = createEmptyMissionState();
+    S.state.ui.activeTab = 'ship';
+    notifyUI();
+    return { ok: true, outcome: 'death', summary: summary };
+  }
+
+  // Fase 1: Risoluzione Status (struttura pronta per status futuri in Step 4/5)
+  function resolveStatusPhase() {
+    var list = S.state.mission.statuses;
+    if (!Array.isArray(list) || list.length === 0) {
+      return { applied: 0 };
+    }
+    return { applied: 0 };
+  }
+
+  // Fase 2: Risoluzione Meteo (danni meteo, Dd Casco Spaziale e nuovi status in Step 4)
+  function resolveWeatherPhase() {
+    var weather = S.state.mission.weather;
+    if (!weather) {
+      return { applied: false, damage: 0 };
+    }
+    return { applied: false, damage: 0 };
+  }
+
+  // Fase 3: Risoluzione Danni Combattimento (scudi, vita, Dd Tuta Spaziale, eventuali status futuri)
+  function resolveCombatDamagePhase(planet, missionCfg) {
     var rawDmg = Math.max(0, toInt(missionCfg.enemyDamage, 1));
     var suitInst = S.state.equipment.equipped.suit;
     var suitRed = 0;
@@ -970,58 +1040,97 @@
     }
 
     var finalDmg = Math.max(0, rawDmg - suitRed);
-    var shieldAbsorbed = Math.min(S.state.player.shield, finalDmg);
-    var hpLost = finalDmg - shieldAbsorbed;
-
-    S.state.player.shield -= shieldAbsorbed;
-    S.state.player.hp = Math.max(0, S.state.player.hp - hpLost);
-    S.state.mission.damageTaken += finalDmg;
-
-    if (S.state.player.hp <= 0) {
-      var expLost = Math.floor((S.state.player.exp * S.COMBAT_RULES.deathExpLossPct) / 100);
-      var creditsLost = Math.floor((S.state.player.credits * S.COMBAT_RULES.deathCreditsLossPct) / 100);
-      S.state.player.exp = Math.max(0, S.state.player.exp - expLost);
-      S.state.player.credits = Math.max(0, S.state.player.credits - creditsLost);
-
-      var lvData = getLevelData(S.state.player.level);
-      S.state.player.hp = Math.min(S.COMBAT_RULES.deathRespawnHp, lvData.maxHp);
-      S.state.player.shield = S.COMBAT_RULES.deathRespawnShield;
-      S.state.stats.deaths += 1;
-
-      var summary = {
-        planetName: planet.name,
-        difficulty: missionCfg.difficulty,
-        missionName: missionCfg.name,
-        turn: S.state.mission.turn,
-        aliensKilled: S.state.mission.aliensTotal - S.state.mission.aliensLeft,
-        aliensTotal: S.state.mission.aliensTotal,
-        expLost: expLost,
-        creditsLost: creditsLost,
-        respawnHp: S.state.player.hp
-      };
-
-      S.state.mission = createEmptyMissionState();
-      S.state.ui.activeTab = 'ship';
-      notifyUI();
-      return { ok: true, outcome: 'death', summary: summary };
-    }
+    var dmgRes = applyDamageToPlayer(finalDmg);
 
     var atkDetails = 'Contrattacco alieno: ' + finalDmg + ' danni';
     if (suitRed > 0) {
       atkDetails += ' (Tuta -' + suitRed + ')';
     }
-    atkDetails += ' -> Scudo -' + shieldAbsorbed + ', Vita -' + hpLost + '.';
+    atkDetails += ' -> Scudo -' + dmgRes.shieldAbsorbed + ', Vita -' + dmgRes.hpLost + '.';
     pushMissionLog(atkDetails);
 
+    return {
+      damage: finalDmg,
+      shieldAbsorbed: dmgRes.shieldAbsorbed,
+      hpLost: dmgRes.hpLost,
+      suitReduced: suitRed
+    };
+  }
+
+  // Fase 4: Risoluzione di incremento del turno
+  function resolveTurnIncrementPhase() {
     S.state.mission.turn += 1;
+  }
+
+  // Fase 5: Risoluzione del Colpo (Check JustTanked + precisione con 8,3% miss)
+  function resolveShotPhase(planet, missionCfg) {
+    if (S.state.player.hp <= 0) {
+      return triggerMissionDefeat(planet, missionCfg);
+    }
+
+    var missPermille = toInt(S.COMBAT_RULES.missChancePermille, 83);
+    var isMiss = randomInt(1, 1000) <= missPermille;
+
+    if (isMiss) {
+      S.state.mission.lastShot = {
+        turn: S.state.mission.turn,
+        hit: false,
+        expAdded: 0,
+        leveledUp: false,
+        newLevel: S.state.player.level
+      };
+      pushMissionLog('Colpo mancato! (MISS — nessun alieno ucciso).');
+      notifyUI();
+      return {
+        ok: true,
+        outcome: 'miss',
+        hit: false,
+        leveledUp: false,
+        newLevel: S.state.player.level
+      };
+    }
+
+    S.state.mission.aliensLeft = Math.max(0, S.state.mission.aliensLeft - 1);
+    S.state.stats.aliensKilled += 1;
+
+    var expRes = addExp(S.COMBAT_RULES.expPerAlien);
+    S.state.mission.expGained += expRes.expAdded;
+    S.state.mission.levelsGained += expRes.levelsGained;
+
+    S.state.mission.lastShot = {
+      turn: S.state.mission.turn,
+      hit: true,
+      expAdded: expRes.expAdded,
+      leveledUp: expRes.leveledUp,
+      newLevel: expRes.newLevel
+    };
+
+    var shotMsg = 'Sparo a segno: -1 Alieno (+' + expRes.expAdded + ' EXP).';
+    if (expRes.leveledUp) {
+      shotMsg += ' LEVEL UP! Livello ' + expRes.newLevel + ' raggiunto (Vita e Scudo al 100%).';
+    }
+    pushMissionLog(shotMsg);
+
+    if (S.state.mission.aliensLeft === 0) {
+      S.state.mission.completedReady = true;
+      pushMissionLog('Settore ripulito! Premi "Completa Missione" per ritirare le ricompense.');
+      notifyUI();
+      return {
+        ok: true,
+        outcome: 'ready_complete',
+        hit: true,
+        leveledUp: expRes.leveledUp,
+        newLevel: expRes.newLevel
+      };
+    }
+
     notifyUI();
     return {
       ok: true,
       outcome: 'continue',
-      damage: finalDmg,
-      shieldAbsorbed: shieldAbsorbed,
-      hpLost: hpLost,
-      suitReduced: suitRed
+      hit: true,
+      leveledUp: expRes.leveledUp,
+      newLevel: expRes.newLevel
     };
   }
 
@@ -1046,37 +1155,11 @@
     S.state.stats.shotsFired += 1;
     S.state.mission.shotsFired += 1;
 
-    var rifle = S.state.equipment.equipped.rifle;
-    if (rifle && rifle.dd > 0) {
-      rifle.dd = Math.max(0, rifle.dd - 1);
-    }
-
-    S.state.mission.aliensLeft = Math.max(0, S.state.mission.aliensLeft - 1);
-    S.state.stats.aliensKilled += 1;
-
-    var expRes = addExp(S.COMBAT_RULES.expPerAlien);
-    S.state.mission.expGained += expRes.expAdded;
-    S.state.mission.levelsGained += expRes.levelsGained;
-
-    var shotMsg = 'Sparo a segno: -1 Alieno (+' + expRes.expAdded + ' EXP).';
-    if (expRes.leveledUp) {
-      shotMsg += ' LEVEL UP! Livello ' + expRes.newLevel + ' raggiunto (Vita e Scudo al 100%).';
-    }
-    pushMissionLog(shotMsg);
-
-    if (S.state.mission.aliensLeft === 0) {
-      S.state.mission.completedReady = true;
-      pushMissionLog('Settore ripulito! Premi "Completa Missione" per ritirare le ricompense.');
-      notifyUI();
-      return {
-        ok: true,
-        outcome: 'ready_complete',
-        leveledUp: expRes.leveledUp,
-        newLevel: expRes.newLevel
-      };
-    }
-
-    return resolveEnemyCounterattack(planet, missionCfg);
+    resolveStatusPhase(planet, missionCfg);
+    resolveWeatherPhase(planet, missionCfg);
+    resolveCombatDamagePhase(planet, missionCfg);
+    resolveTurnIncrementPhase();
+    return resolveShotPhase(planet, missionCfg);
   }
 
   function attemptEscape() {
@@ -1112,15 +1195,17 @@
     }
 
     pushMissionLog('Fuga fallita (1d20: ' + roll + ', serve ' + S.COMBAT_RULES.escapeRollTarget + '+)! Subisci il contrattacco.');
-    var counter = resolveEnemyCounterattack(planet, missionCfg);
-    if (counter.outcome === 'death') {
-      return counter;
+    var combatRes = resolveCombatDamagePhase(planet, missionCfg);
+    resolveTurnIncrementPhase();
+    if (S.state.player.hp <= 0) {
+      return triggerMissionDefeat(planet, missionCfg);
     }
+    notifyUI();
     return {
       ok: true,
       outcome: 'escape_failed',
       roll: roll,
-      damage: counter.damage
+      damage: combatRes.damage
     };
   }
 

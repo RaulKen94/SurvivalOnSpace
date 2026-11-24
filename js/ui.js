@@ -66,6 +66,34 @@
     }
   }
 
+  function icon(group, key) {
+    var icons = S.ICONS && S.ICONS[group];
+    return icons && icons[key] ? icons[key] : '';
+  }
+
+  function formatRecapValue(val, prefix) {
+    var n = S.toInt(val, 0);
+    if (n === 0) {
+      return 'N/A';
+    }
+    return (prefix || '') + S.formatNumber(n);
+  }
+
+  function formatGlobalScoreActive(activeKey) {
+    if (!activeKey || typeof activeKey !== 'string') {
+      return 'Nessuno';
+    }
+    var parts = activeKey.split('_');
+    if (parts.length < 2) {
+      return activeKey;
+    }
+    var diffPart = parts[parts.length - 1];
+    var planetId = parts.slice(0, parts.length - 1).join('_');
+    var planet = S.PLANETS && S.PLANETS[planetId] ? S.PLANETS[planetId] : null;
+    var planetName = planet ? planet.name : planetId;
+    return planetName + ' — Difficoltà ' + diffPart;
+  }
+
   function formatAliensRange(mission) {
     if (!mission) {
       return '0';
@@ -78,7 +106,7 @@
 
   function renderFeatureBadges(features) {
     if (!features || features.length === 0) {
-      return '<span class="badge badge-ok">Standard</span>';
+      return '';
     }
     var html = '';
     var i, f;
@@ -101,11 +129,12 @@
     if (!slotMeta) {
       return '';
     }
+    var slotTitle = (slotMeta.icon ? slotMeta.icon + ' ' : '') + slotMeta.label;
     if (!inst) {
       return (
         '<div class="equip-card ' + slotMeta.cssClass + '">' +
           '<div class="equip-slot-label">' +
-            '<span>' + escapeHtml(slotMeta.label) + '</span>' +
+            '<span>' + escapeHtml(slotTitle) + '</span>' +
             '<span>' + escapeHtml(slotMeta.role) + '</span>' +
           '</div>' +
           '<div class="equip-model-name">Slot vuoto</div>' +
@@ -120,7 +149,7 @@
     return (
       '<div class="equip-card ' + slotMeta.cssClass + (isBroken ? ' equip-broken' : '') + '">' +
         '<div class="equip-slot-label">' +
-          '<span>' + escapeHtml(slotMeta.label) + '</span>' +
+          '<span>' + escapeHtml(slotTitle) + '</span>' +
           '<span>' + escapeHtml(slotMeta.role) + '</span>' +
         '</div>' +
         '<div class="equip-model-name">' + escapeHtml(model ? model.name : inst.modelId) + '</div>' +
@@ -147,21 +176,23 @@
       return '<p class="section-subtitle">Tabella drop per questa difficoltà in arrivo nello Step 4.</p>';
     }
     var html = '<div class="drop-list">';
-    var i, entry, name, metaHtml, weightHtml;
+    var i, entry, name, metaHtml, weightHtml, eqIcon, itemIcon;
     for (i = 0; i < mission.dropTable.length; i += 1) {
       entry = mission.dropTable[i];
       if (entry.kind === 'equip') {
         var eqModel = S.EQUIP_MODELS[entry.id];
         var eqSlot = eqModel ? S.EQUIP_SLOTS[eqModel.slot] : null;
+        eqIcon = eqSlot && eqSlot.icon ? eqSlot.icon + ' ' : '';
         name = eqModel ? eqModel.name : entry.id;
         metaHtml =
-          '<span class="equip-text-' + (eqSlot ? eqSlot.id : 'suit') + '"><strong>' + escapeHtml(name) + '</strong></span>' +
+          '<span class="equip-text-' + (eqSlot ? eqSlot.id : 'suit') + '"><strong>' + escapeHtml(eqIcon + name) + '</strong></span>' +
           '<span class="badge badge-cyan">Equip (' + (eqModel ? eqModel.maxDd : 0) + ' Dd)</span>';
         weightHtml = '<span class="badge badge-step">Slot</span>';
       } else {
         var itemDef = S.ITEMS[entry.id];
+        itemIcon = itemDef && itemDef.icon ? itemDef.icon + ' ' : '';
         name = itemDef ? itemDef.name : entry.id;
-        metaHtml = '<span><strong>' + escapeHtml(name) + '</strong></span>';
+        metaHtml = '<span><strong>' + escapeHtml(itemIcon + name) + '</strong></span>';
         weightHtml = '<span class="weight-text">' + (itemDef ? S.formatNumber(itemDef.weight) : 0) + ' pt.</span>';
       }
       html += (
@@ -198,26 +229,26 @@
       '<div class="hud-top-row">' +
         '<div class="hud-identity">' +
           '<span class="hud-name">' + escapeHtml(p.name) + '</span>' +
-          '<span class="hud-planet-pill">' + escapeHtml(planet.name) + '</span>' +
-          (S.state.mission.active ? '<span class="hud-mission-flag">In Missione</span>' : '') +
+          '<span class="hud-planet-pill">' + icon('stats', 'planet') + ' ' + escapeHtml(planet.name) + '</span>' +
+          (S.state.mission.active ? '<span class="hud-mission-flag">' + icon('tabs', 'mission') + ' In Missione</span>' : '') +
         '</div>' +
         '<div class="hud-currencies">' +
-          '<div class="hud-chip"><span class="hud-chip-label">Crediti</span><span class="hud-chip-val val-credits">' + S.formatNumber(p.credits) + '</span></div>' +
-          '<div class="hud-chip"><span class="hud-chip-label">Liquidi</span><span class="hud-chip-val val-liquids">' + S.formatNumber(p.liquids) + '</span></div>' +
-          '<div class="hud-chip"><span class="hud-chip-label">Munizioni</span><span class="hud-chip-val val-ammo">' + S.formatNumber(S.state.backpack.ammo) + '</span></div>' +
+          '<div class="hud-chip"><span class="hud-chip-label">' + icon('stats', 'credits') + ' Crediti</span><span class="hud-chip-val val-credits">' + S.formatNumber(p.credits) + '</span></div>' +
+          '<div class="hud-chip"><span class="hud-chip-label">' + icon('stats', 'liquids') + ' Liquidi Plusvalenti</span><span class="hud-chip-val val-liquids">' + S.formatNumber(p.liquids) + '</span></div>' +
+          '<div class="hud-chip"><span class="hud-chip-label">' + icon('stats', 'ammo') + ' Munizioni</span><span class="hud-chip-val val-ammo">' + S.formatNumber(S.state.backpack.ammo) + '</span></div>' +
         '</div>' +
       '</div>' +
       '<div class="hud-bars-grid">' +
         '<div class="stat-meter">' +
-          '<div class="stat-meter-head"><span class="stat-meter-title">Livello ' + S.formatNumber(p.level) + ' · EXP</span><span class="stat-meter-value">' + expLabel + '</span></div>' +
+          '<div class="stat-meter-head"><span class="stat-meter-title">' + icon('stats', 'exp') + ' Livello ' + S.formatNumber(p.level) + ' · EXP</span><span class="stat-meter-value">' + expLabel + '</span></div>' +
           '<div class="progress-track"><div class="progress-fill fill-exp" style="width:' + expPct + '%"></div></div>' +
         '</div>' +
         '<div class="stat-meter">' +
-          '<div class="stat-meter-head"><span class="stat-meter-title">Vita</span><span class="stat-meter-value">' + S.formatNumber(p.hp) + ' / ' + S.formatNumber(lv.maxHp) + '</span></div>' +
+          '<div class="stat-meter-head"><span class="stat-meter-title">' + icon('stats', 'hp') + ' Vita</span><span class="stat-meter-value">' + S.formatNumber(p.hp) + ' / ' + S.formatNumber(lv.maxHp) + '</span></div>' +
           '<div class="progress-track"><div class="progress-fill fill-hp" style="width:' + hpPct + '%"></div></div>' +
         '</div>' +
         '<div class="stat-meter">' +
-          '<div class="stat-meter-head"><span class="stat-meter-title">Scudo</span><span class="stat-meter-value">' + S.formatNumber(p.shield) + ' / ' + S.formatNumber(lv.maxShield) + '</span></div>' +
+          '<div class="stat-meter-head"><span class="stat-meter-title">' + icon('stats', 'shield') + ' Scudo</span><span class="stat-meter-value">' + S.formatNumber(p.shield) + ' / ' + S.formatNumber(lv.maxShield) + '</span></div>' +
           '<div class="progress-track"><div class="progress-fill fill-shield" style="width:' + shieldPct + '%"></div></div>' +
         '</div>' +
       '</div>'
@@ -233,12 +264,12 @@
     var inMission = S.state.mission.active;
     var selectedDiff = S.state.mission.selectedDifficulty;
     var buttons = nav.querySelectorAll('.tab-btn');
-    var i, btn, tabId, isCurrent, isLocked;
+    var i, btn, tabId, isCurrent, isLocked, labelText;
     var labels = {
-      map: 'Mappa',
-      mission: 'Missione',
-      ship: 'Nave Spaziale',
-      options: 'Opzioni'
+      map: icon('tabs', 'map') + ' Mappa',
+      mission: icon('tabs', 'mission') + ' Missione',
+      ship: icon('tabs', 'ship') + ' Nave Spaziale',
+      options: icon('tabs', 'options') + ' Opzioni'
     };
 
     for (i = 0; i < buttons.length; i += 1) {
@@ -251,10 +282,11 @@
       btn.classList.toggle('locked-by-mission', isLocked);
       btn.disabled = isLocked;
 
+      labelText = labels[tabId] || tabId;
       if (tabId === 'mission' && selectedDiff > 0 && !inMission) {
-        btn.innerHTML = '<span>' + labels[tabId] + '</span><span class="tab-indicator" title="Missione selezionata"></span>';
+        btn.innerHTML = '<span>' + escapeHtml(labelText) + '</span><span class="tab-indicator" title="Missione selezionata"></span>';
       } else {
-        btn.textContent = labels[tabId] || tabId;
+        btn.textContent = labelText;
       }
     }
   }
@@ -267,8 +299,7 @@
     listHtml += (
       '<button type="button" class="mission-option' + (selected === 0 ? ' selected' : '') + '" data-select-diff="0">' +
         '<div class="mission-option-top">' +
-          '<span class="mission-option-name">Nave Spaziale (Posizione Attuale)</span>' +
-          '<span class="badge badge-cyan">Sicura</span>' +
+          '<span class="mission-option-name">' + icon('tabs', 'ship') + ' Nave Spaziale (Posizione Attuale)</span>' +
         '</div>' +
         '<div class="mission-option-meta"><span>Base orbitale su ' + escapeHtml(planet.name) + ' · Nessun combattimento</span></div>' +
       '</button>'
@@ -288,56 +319,23 @@
           (!lockInfo.unlocked ? ' locked' : '') +
         '" data-select-diff="' + d + '"' + (!lockInfo.unlocked ? ' disabled' : '') + '>' +
           '<div class="mission-option-top">' +
-            '<span class="mission-option-name">Difficoltà ' + d + ' — ' + escapeHtml(m.name) + '</span>' +
+            '<span class="mission-option-name">' + icon('tabs', 'mission') + ' Difficoltà ' + d + ' — ' + escapeHtml(m.name) + '</span>' +
             (lockInfo.unlocked
-              ? '<span class="badge badge-ok">Sbloccata</span>'
+              ? ''
               : '<span class="badge badge-danger">' + escapeHtml(lockInfo.reason) + '</span>') +
           '</div>' +
           '<div class="mission-option-meta">' +
             '<span>Alieni: <strong>' + formatAliensRange(m) + '</strong></span>' +
-            '<span>Premio base: <strong class="val-credits">' + S.formatNumber(m.creditsReward) + ' Crediti</strong></span>' +
+            '<span>Premio base: <strong class="val-credits">' + icon('stats', 'credits') + ' ' + S.formatNumber(m.creditsReward) + ' Crediti</strong></span>' +
             renderFeatureBadges(m.features) +
           '</div>' +
         '</button>'
       );
     }
 
-    var detailHtml = '';
-    if (selected === 0) {
-      detailHtml = (
-        '<div class="panel">' +
-          '<div class="panel-title"><span>Dettagli Selezione</span><span class="badge badge-cyan">Nave Spaziale</span></div>' +
-          '<p class="section-subtitle">Attualmente sei attraccato sulla tua Nave Spaziale in orbita attorno a <strong>' + escapeHtml(planet.name) + '</strong>. Seleziona una delle 4 difficoltà qui a sinistra per consultarne i nemici, le probabilità di drop e prepararti alla missione.</p>' +
-        '</div>'
-      );
-    } else {
-      var selMission = planet.missions[selected];
-      detailHtml = (
-        '<div class="panel panel-highlight">' +
-          '<div class="panel-title">' +
-            '<span>Difficoltà ' + selected + ': ' + escapeHtml(selMission.name) + '</span>' +
-            renderFeatureBadges(selMission.features) +
-          '</div>' +
-          '<p class="section-subtitle">' + escapeHtml(selMission.description) + '</p>' +
-          '<div class="btn-row" style="margin: 10px 0 12px;">' +
-            '<span class="badge badge-cyan">Alieni: ' + formatAliensRange(selMission) + '</span>' +
-            '<span class="badge badge-warn">Premio: ' + S.formatNumber(selMission.creditsReward) + ' Crediti</span>' +
-          '</div>' +
-          '<div class="panel-title" style="font-size:0.88rem; margin-bottom:6px;"><span>Anteprima Probabilità Drop</span></div>' +
-          renderDropPreviewList(selMission) +
-          '<div class="btn-row" style="margin-top: 14px;">' +
-            '<button type="button" class="btn btn-primary" data-go-mission="' + selected + '">Vai al Briefing Missione</button>' +
-          '</div>' +
-        '</div>'
-      );
-    }
-
     var gs = S.state.globalScore;
     var gsTarget = S.GLOBAL_SCORE_TARGET;
     var gsPct = percentInt(gs.streak, gsTarget);
-    var previewDiff = selected > 0 ? selected : 1;
-    var gsMission = planet.missions[previewDiff];
-    var gsReward = gsMission && gsMission.globalScoreReward ? gsMission.globalScoreReward : { liquids: 1, credits: 100 };
 
     var locsHtml = '';
     var i, loc;
@@ -347,14 +345,13 @@
         '<div class="module-card">' +
           '<div>' +
             '<div class="module-card-head">' +
-              '<h3 class="module-card-title">' + escapeHtml(loc.name) + '</h3>' +
+              '<h3 class="module-card-title">' + (loc.icon ? loc.icon + ' ' : '') + escapeHtml(loc.name) + '</h3>' +
               '<span class="badge badge-step">Step 5</span>' +
             '</div>' +
             '<p class="module-card-desc" style="margin-top:6px;">' + escapeHtml(loc.description) + '</p>' +
           '</div>' +
           '<div class="btn-row">' +
-            '<span class="badge badge-purple">' + escapeHtml(loc.tag) + '</span>' +
-            '<button type="button" class="btn btn-ghost btn-sm" disabled>Visita (Dd Stivali)</button>' +
+            '<button type="button" class="btn btn-ghost btn-sm" disabled>' + icon('equip', 'boots') + ' Visita (Dd Stivali)</button>' +
           '</div>' +
         '</div>'
       );
@@ -363,29 +360,26 @@
     container.innerHTML = (
       '<div class="section-header">' +
         '<div>' +
-          '<h1 class="section-title">Mappa Planetaria — ' + escapeHtml(planet.name) + '</h1>' +
+          '<h1 class="section-title">' + icon('tabs', 'map') + ' Mappa Planetaria — ' + icon('stats', 'planet') + ' ' + escapeHtml(planet.name) + '</h1>' +
           '<p class="section-subtitle">' + escapeHtml(planet.subtitle) + ' · ' + escapeHtml(planet.description) + '</p>' +
         '</div>' +
       '</div>' +
-      '<div class="map-layout">' +
-        '<div class="panel">' +
-          '<div class="panel-title"><span>Missioni Disponibili</span><span class="badge badge-cyan">4 Difficoltà</span></div>' +
-          '<div class="mission-list">' + listHtml + '</div>' +
-        '</div>' +
-        detailHtml +
+      '<div class="panel">' +
+        '<div class="panel-title"><span>' + icon('tabs', 'mission') + ' Missioni Disponibili</span></div>' +
+        '<div class="mission-list">' + listHtml + '</div>' +
       '</div>' +
       '<div class="panel">' +
         '<div class="panel-title">' +
-          '<span>Global Score (Streak 10/10)</span>' +
+          '<span>' + icon('modules', 'recap') + ' Global Score</span>' +
           '<span class="badge badge-cyan">' + S.formatNumber(gs.streak) + ' / ' + S.formatNumber(gsTarget) + '</span>' +
         '</div>' +
         '<div class="progress-track" style="height:10px; margin-bottom:8px;">' +
           '<div class="progress-fill fill-exp" style="width:' + gsPct + '%"></div>' +
         '</div>' +
-        '<p class="section-subtitle">Track attivo: <strong>' + escapeHtml(gs.activeKey || 'Nessuna serie iniziata') + '</strong> · Premio 10/10 (Diff. ' + previewDiff + '): <strong class="val-liquids">' + S.formatNumber(gsReward.liquids) + ' Liquidi Plusvalenti</strong> + <strong class="val-credits">' + S.formatNumber(gsReward.credits) + ' Crediti</strong>. Cambiare difficoltà azzera il progresso attuale.</p>' +
+        '<p class="section-subtitle">Attivo: <strong>' + escapeHtml(formatGlobalScoreActive(gs.activeKey)) + '</strong></p>' +
       '</div>' +
       '<div class="panel">' +
-        '<div class="panel-title"><span>Esplorazione Pianeta (Fuori Missione)</span><span class="badge badge-purple">Usa Dd Stivali Spaziali</span></div>' +
+        '<div class="panel-title"><span>' + icon('equip', 'boots') + ' Esplorazione Pianeta (Fuori Missione)</span></div>' +
         '<div class="grid-2">' + locsHtml + '</div>' +
       '</div>'
     );
@@ -398,7 +392,7 @@
       return '<p class="section-subtitle">Nessun oggetto nello Zaino.</p>';
     }
     var html = '<div class="inv-item-list">';
-    var i, id, qty, def, lineW, canUse;
+    var i, id, qty, def, lineW, canUse, itemIcon;
     for (i = 0; i < keys.length; i += 1) {
       id = keys[i];
       qty = S.toInt(items[id], 0);
@@ -408,10 +402,11 @@
       }
       lineW = def.weight * qty;
       canUse = id !== 'chip_identita';
+      itemIcon = def.icon ? def.icon + ' ' : '';
       html += (
         '<div class="inv-item-row">' +
           '<div class="inv-item-info">' +
-            '<span><strong>' + escapeHtml(def.name) + '</strong> ×' + S.formatNumber(qty) + ' · <span class="weight-text">' + S.formatNumber(lineW) + ' pt.</span></span>' +
+            '<span><strong>' + escapeHtml(itemIcon + def.name) + '</strong> ×' + S.formatNumber(qty) + ' · <span class="weight-text">' + S.formatNumber(lineW) + ' pt.</span></span>' +
             '<span class="inv-item-sub">' + escapeHtml(def.description) + '</span>' +
           '</div>' +
           '<div class="inv-item-actions">' +
@@ -424,6 +419,17 @@
     }
     html += '</div>';
     return html;
+  }
+
+  function renderLastShotBox(lastShot) {
+    if (!lastShot) {
+      return '<div class="last-shot-box last-shot-idle">' + icon('tabs', 'mission') + ' Ultimo sparo: In attesa del primo colpo</div>';
+    }
+    if (lastShot.hit) {
+      var lvNote = lastShot.leveledUp ? ' · ' + icon('stats', 'exp') + ' LEVEL UP (Liv. ' + S.formatNumber(lastShot.newLevel) + ')' : '';
+      return '<div class="last-shot-box last-shot-hit">' + icon('tabs', 'mission') + ' Ultimo sparo (T' + S.formatNumber(lastShot.turn) + '): Colpo a segno! (-1 Alieno, +' + S.formatNumber(lastShot.expAdded) + ' ' + icon('stats', 'exp') + ' EXP' + lvNote + ')</div>';
+    }
+    return '<div class="last-shot-box last-shot-miss">💨 Ultimo sparo (T' + S.formatNumber(lastShot.turn) + '): Colpo mancato (MISS)</div>';
   }
 
   function renderMissionTab(container) {
@@ -439,20 +445,24 @@
       var bpMax = S.state.backpack.maxWeight;
       var ammoLeft = S.state.backpack.ammo;
 
+      var lastShotHtml = renderLastShotBox(ms.lastShot);
       var actionHtml = '';
       if (ms.completedReady) {
         actionHtml = (
+          lastShotHtml +
           '<p class="section-subtitle notice-ok" style="margin-bottom:10px;">Tutti gli alieni sono stati eliminati! Premi il pulsante qui sotto per completare la missione, raccogliere i drop e tornare al riepilogo.</p>' +
           '<button type="button" class="btn btn-success btn-combat-big" id="btn-complete-mission">Completa Missione</button>'
         );
       } else if (ammoLeft > 0) {
         actionHtml = (
-          '<button type="button" class="btn btn-primary btn-combat-big" id="btn-shoot-alien">SPARA (-1 Munizione)</button>' +
-          '<p class="section-subtitle" style="margin-top:8px;">Ogni sparo elimina 1 alieno (+1 EXP immediato) e, se restano nemici vivi, attiva il loro contrattacco (danno base ' + S.formatNumber(mCfg ? mCfg.enemyDamage : 1) + ', ridotto dalla Tuta e assorbito prima dallo Scudo).</p>'
+          '<button type="button" class="btn btn-primary btn-combat-big" id="btn-shoot-alien">' + icon('equip', 'rifle') + ' SPARA (-1 ' + icon('stats', 'ammo') + ' Munizione)</button>' +
+          lastShotHtml +
+          '<p class="section-subtitle" style="margin-top:8px;">Sequenza turno: Status → Meteo → Contrattacco (' + S.formatNumber(mCfg ? mCfg.enemyDamage : 1) + ' danni base, ' + icon('equip', 'suit') + ' Tuta -1 Dd) → +1 Turno → Check JustTanked &amp; Colpo (8,3% miss · se a segno: -1 Alieno, +1 ' + icon('stats', 'exp') + ' EXP).</p>'
         );
       } else {
         actionHtml = (
-          '<p class="section-subtitle notice-danger" style="margin-bottom:10px;"><strong>Munizioni esaurite!</strong> Usa un Caricatore Standard nello Zaino oppure tenta la fuga d\'emergenza (tiro 1d20, serve almeno 18; in caso di successo perdi il 30% dell\'EXP attuale, altrimenti subisci il contrattacco).</p>' +
+          lastShotHtml +
+          '<p class="section-subtitle notice-danger" style="margin-bottom:10px;"><strong>' + icon('stats', 'ammo') + ' Munizioni esaurite!</strong> Usa un Caricatore Standard nello Zaino oppure tenta la fuga d\'emergenza (tiro 1d20, serve almeno 18; in caso di successo perdi il 30% dell\'EXP attuale, altrimenti subisci il contrattacco).</p>' +
           '<button type="button" class="btn btn-danger btn-combat-big" id="btn-escape-mission">FUGGI (Tira 1d20 — serve ≥ 18)</button>'
         );
       }
@@ -479,17 +489,17 @@
         '<div class="combat-banner">' +
           '<div class="section-header" style="padding-bottom:6px;">' +
             '<div>' +
-              '<h1 class="section-title">' + escapeHtml(planet.name) + ' · Difficoltà ' + ms.selectedDifficulty + ' — ' + escapeHtml(mCfg ? mCfg.name : '') + '</h1>' +
+              '<h1 class="section-title">' + icon('tabs', 'mission') + ' ' + escapeHtml(planet.name) + ' · Difficoltà ' + ms.selectedDifficulty + ' — ' + escapeHtml(mCfg ? mCfg.name : '') + '</h1>' +
               '<p class="section-subtitle">Mission = TRUE · Tutte le altre schede sono bloccate fino al termine della missione.</p>' +
             '</div>' +
             renderFeatureBadges(mCfg ? mCfg.features : []) +
           '</div>' +
           '<div class="combat-counters">' +
-            '<div class="combat-stat-box"><span class="combat-stat-label">Turno</span><span class="combat-stat-value">' + S.formatNumber(ms.turn) + '</span></div>' +
+            '<div class="combat-stat-box"><span class="combat-stat-label">Turni</span><span class="combat-stat-value">' + S.formatNumber(ms.turn) + '</span></div>' +
             '<div class="combat-stat-box"><span class="combat-stat-label">Alieni Rimanenti</span><span class="combat-stat-value aliens-val">' + S.formatNumber(ms.aliensLeft) + ' / ' + S.formatNumber(ms.aliensTotal) + '</span></div>' +
-            '<div class="combat-stat-box"><span class="combat-stat-label">Munizioni Zaino</span><span class="combat-stat-value">' + S.formatNumber(ammoLeft) + '</span></div>' +
+            '<div class="combat-stat-box"><span class="combat-stat-label">' + icon('stats', 'ammo') + ' Munizioni Zaino</span><span class="combat-stat-value">' + S.formatNumber(ammoLeft) + '</span></div>' +
           '</div>' +
-          '<div class="progress-track" style="height:9px;" title="Alieni eliminati: ' + aliensKilled + '/' + ms.aliensTotal + '">' +
+          '<div class="progress-track" style="height:9px;" title="Alieni uccisi: ' + aliensKilled + '/' + ms.aliensTotal + '">' +
             '<div class="progress-fill fill-hp" style="width:' + aliensLeftPct + '%"></div>' +
           '</div>' +
           (ms.selectedDifficulty >= 2
@@ -498,19 +508,19 @@
         '</div>' +
         '<div class="grid-2">' +
           '<div class="panel panel-highlight">' +
-            '<div class="panel-title"><span>Azioni di Combattimento</span><span class="badge badge-cyan">Turno ' + S.formatNumber(ms.turn) + '</span></div>' +
+            '<div class="panel-title"><span>' + icon('tabs', 'mission') + ' Azioni di Combattimento</span><span class="badge badge-cyan">Turni: ' + S.formatNumber(ms.turn) + '</span></div>' +
             actionHtml +
           '</div>' +
           '<div class="panel">' +
             '<div class="panel-title">' +
-              '<span>Zaino Rapido (Non avanza il turno)</span>' +
+              '<span>' + icon('modules', 'backpack') + ' Zaino Rapido (Non avanza il turno)</span>' +
               '<span class="weight-text">' + S.formatNumber(bpUsed) + ' / ' + S.formatNumber(bpMax) + ' pt.</span>' +
             '</div>' +
             renderMissionBackpackItems() +
           '</div>' +
         '</div>' +
         '<div class="panel">' +
-          '<div class="panel-title"><span>Equipaggiamento Attivo</span><span class="badge badge-cyan">Usura Dd in Tempo Reale</span></div>' +
+          '<div class="panel-title"><span>' + icon('stats', 'shield') + ' Equipaggiamento Attivo</span><span class="badge badge-cyan">Usura Dd in Tempo Reale</span></div>' +
           '<div class="grid-4">' +
             renderEquipSlotCard('helmet', false) +
             renderEquipSlotCard('suit', false) +
@@ -519,7 +529,7 @@
           '</div>' +
         '</div>' +
         '<div class="panel">' +
-          '<div class="panel-title"><span>Registro Tattico</span><span class="badge badge-cyan">EXP guadagnata: +' + S.formatNumber(ms.expGained) + '</span></div>' +
+          '<div class="panel-title"><span>' + icon('modules', 'recap') + ' Registro Tattico</span><span class="badge badge-cyan">' + icon('stats', 'exp') + ' EXP ottenuta: +' + S.formatNumber(ms.expGained) + '</span></div>' +
           logHtml +
         '</div>'
       );
@@ -531,9 +541,9 @@
     if (!diff || diff <= 0 || !planet.missions[diff]) {
       container.innerHTML = (
         '<div class="panel empty-state">' +
-          '<h1 class="section-title">Nessuna Missione Selezionata</h1>' +
-          '<p class="section-subtitle">Sei attualmente attraccato sulla Nave Spaziale. Scegli una difficoltà disponibile dal tab <strong>Mappa</strong> per aprire il briefing operativo.</p>' +
-          '<button type="button" class="btn btn-primary" data-nav-tab="map">Apri Mappa</button>' +
+          '<h1 class="section-title">' + icon('tabs', 'mission') + ' Nessuna Missione Selezionata</h1>' +
+          '<p class="section-subtitle">Sei attualmente attraccato sulla Nave Spaziale. Scegli una difficoltà disponibile dal tab <strong>' + icon('tabs', 'map') + ' Mappa</strong> per aprire il briefing operativo.</p>' +
+          '<button type="button" class="btn btn-primary" data-nav-tab="map">' + icon('tabs', 'map') + ' Apri Mappa</button>' +
         '</div>'
       );
       return;
@@ -547,7 +557,7 @@
     container.innerHTML = (
       '<div class="section-header">' +
         '<div>' +
-          '<h1 class="section-title">Briefing Missione — ' + escapeHtml(planet.name) + ' (Difficoltà ' + diff + ')</h1>' +
+          '<h1 class="section-title">' + icon('tabs', 'mission') + ' Briefing Missione — ' + icon('stats', 'planet') + ' ' + escapeHtml(planet.name) + ' (Difficoltà ' + diff + ')</h1>' +
           '<p class="section-subtitle">' + escapeHtml(m.name) + ' · ' + escapeHtml(m.description) + '</p>' +
         '</div>' +
         renderFeatureBadges(m.features) +
@@ -558,13 +568,13 @@
           '<div class="inv-item-list" style="margin-top:0;">' +
             '<div class="inv-item-row"><span>Alieni da abbattere</span><strong class="mono">' + formatAliensRange(m) + '</strong></div>' +
             '<div class="inv-item-row"><span>Danno base nemico</span><strong class="mono">' + S.formatNumber(m.enemyDamage) + ' / turno</strong></div>' +
-            '<div class="inv-item-row"><span>Ricompensa base</span><strong class="mono val-credits">' + S.formatNumber(m.creditsReward) + ' Crediti</strong></div>' +
-            '<div class="inv-item-row"><span>Peso Zaino caricato</span><span class="weight-text">' + S.formatNumber(bpTotal) + ' / ' + S.formatNumber(bpCap) + ' pt.</span></div>' +
-            '<div class="inv-item-row"><span>Munizioni pronte</span><strong class="mono val-ammo">' + S.formatNumber(S.state.backpack.ammo) + '</strong></div>' +
+            '<div class="inv-item-row"><span>' + icon('stats', 'credits') + ' Ricompensa base</span><strong class="mono val-credits">' + S.formatNumber(m.creditsReward) + ' Crediti</strong></div>' +
+            '<div class="inv-item-row"><span>' + icon('modules', 'backpack') + ' Peso Zaino caricato</span><span class="weight-text">' + S.formatNumber(bpTotal) + ' / ' + S.formatNumber(bpCap) + ' pt.</span></div>' +
+            '<div class="inv-item-row"><span>' + icon('stats', 'ammo') + ' Munizioni pronte</span><strong class="mono val-ammo">' + S.formatNumber(S.state.backpack.ammo) + '</strong></div>' +
           '</div>' +
           '<div class="btn-row" style="margin-top:14px;">' +
-            '<button type="button" class="btn btn-ghost" id="btn-cancel-mission">Annulla → Nave Spaziale</button>' +
-            '<button type="button" class="btn btn-primary" id="btn-start-mission">Inizia Missione</button>' +
+            '<button type="button" class="btn btn-ghost" id="btn-cancel-mission">Annulla → ' + icon('tabs', 'ship') + ' Nave Spaziale</button>' +
+            '<button type="button" class="btn btn-primary" id="btn-start-mission">' + icon('tabs', 'mission') + ' Inizia Missione</button>' +
           '</div>' +
         '</div>' +
         '<div class="panel">' +
@@ -573,7 +583,7 @@
         '</div>' +
       '</div>' +
       '<div class="panel">' +
-        '<div class="panel-title"><span>Equipaggiamento Attivo per la Missione</span></div>' +
+        '<div class="panel-title"><span>' + icon('stats', 'shield') + ' Equipaggiamento Attivo per la Missione</span></div>' +
         '<div class="grid-4">' +
           renderEquipSlotCard('helmet', false) +
           renderEquipSlotCard('suit', false) +
@@ -590,7 +600,7 @@
       return '<p class="section-subtitle" style="margin-top:10px;">Deposito equipaggiamenti vuoto. Trova nuovi pezzi Avanzati completando le missioni o rimuovi quelli indossati.</p>';
     }
     var html = '<div class="storage-equip-grid">';
-    var i, inst, model, slotMeta, ddPct, isBroken;
+    var i, inst, model, slotMeta, ddPct, isBroken, slotTitle;
     for (i = 0; i < list.length; i += 1) {
       inst = list[i];
       model = S.EQUIP_MODELS[inst.modelId];
@@ -600,10 +610,11 @@
       }
       ddPct = percentInt(inst.dd, model.maxDd);
       isBroken = inst.dd <= 0;
+      slotTitle = (slotMeta.icon ? slotMeta.icon + ' ' : '') + slotMeta.label;
       html += (
         '<div class="equip-card ' + slotMeta.cssClass + (isBroken ? ' equip-broken' : '') + '">' +
           '<div class="equip-slot-label">' +
-            '<span>' + escapeHtml(slotMeta.label) + '</span>' +
+            '<span>' + escapeHtml(slotTitle) + '</span>' +
             '<span>' + escapeHtml(inst.uid) + '</span>' +
           '</div>' +
           '<div class="equip-model-name">' + escapeHtml(model.name) + '</div>' +
@@ -616,7 +627,7 @@
             (isBroken ? '<span class="badge badge-danger">ROTTO</span>' : '<span></span>') +
             '<div class="btn-row" style="gap:6px;">' +
               '<button type="button" class="btn btn-primary btn-sm" data-equip-uid="' + escapeHtml(inst.uid) + '">Equipaggia</button>' +
-              '<button type="button" class="btn btn-warn btn-sm" data-sell-uid="' + escapeHtml(inst.uid) + '">Vendi (+' + S.formatNumber(model.sellPrice) + ')</button>' +
+              '<button type="button" class="btn btn-warn btn-sm" data-sell-uid="' + escapeHtml(inst.uid) + '">Vendi (' + icon('stats', 'credits') + ' +' + S.formatNumber(model.sellPrice) + ')</button>' +
             '</div>' +
           '</div>' +
         '</div>'
@@ -633,10 +644,10 @@
     }
     var isBackpack = sourceKey === 'backpack';
     var moveDir = isBackpack ? 'toCargo' : 'toBackpack';
-    var moveLabel = isBackpack ? '→ Stiva' : '← Zaino';
+    var moveLabel = isBackpack ? '→ ' + icon('modules', 'cargo') + ' Stiva' : '← ' + icon('modules', 'backpack') + ' Zaino';
 
     var html = '<div class="inv-item-list">';
-    var i, id, qty, def, lineWeight, useBtnHtml;
+    var i, id, qty, def, lineWeight, useBtnHtml, itemIcon;
     for (i = 0; i < keys.length; i += 1) {
       id = keys[i];
       qty = S.toInt(itemsMap[id], 0);
@@ -645,6 +656,7 @@
         continue;
       }
       lineWeight = def.weight * qty;
+      itemIcon = def.icon ? def.icon + ' ' : '';
       if (id === 'chip_identita') {
         useBtnHtml = '<button type="button" class="btn btn-ghost btn-sm" data-nav-tab="options">Usa in Opzioni</button>';
       } else {
@@ -654,7 +666,7 @@
       html += (
         '<div class="inv-item-row">' +
           '<div class="inv-item-info">' +
-            '<span><strong>' + escapeHtml(def.name) + '</strong> ×' + S.formatNumber(qty) + ' · <span class="weight-text">' + S.formatNumber(lineWeight) + ' pt.</span></span>' +
+            '<span><strong>' + escapeHtml(itemIcon + def.name) + '</strong> ×' + S.formatNumber(qty) + ' · <span class="weight-text">' + S.formatNumber(lineWeight) + ' pt.</span></span>' +
             '<span class="inv-item-sub">' + escapeHtml(def.description) + '</span>' +
           '</div>' +
           '<div class="inv-item-actions">' +
@@ -694,45 +706,45 @@
     container.innerHTML = (
       '<div class="section-header">' +
         '<div>' +
-          '<h1 class="section-title">Nave Spaziale — Ponte Principale</h1>' +
+          '<h1 class="section-title">' + icon('tabs', 'ship') + ' Nave Spaziale — Ponte Principale</h1>' +
           '<p class="section-subtitle">Home operativa di bordo. Prepara equipaggiamento, Zaino e Stiva prima di partire.</p>' +
         '</div>' +
-        '<button type="button" class="btn btn-primary btn-sm" data-nav-tab="map">Scegli Missione in Mappa</button>' +
+        '<button type="button" class="btn btn-primary btn-sm" data-nav-tab="map">' + icon('tabs', 'map') + ' Scegli Missione in Mappa</button>' +
       '</div>' +
       '<div class="module-grid">' +
         '<div class="module-card">' +
           '<div>' +
             '<div class="module-card-head">' +
-              '<h3 class="module-card-title">Recap Ultima Missione</h3>' +
+              '<h3 class="module-card-title">' + icon('modules', 'recap') + ' Recap Ultima Missione</h3>' +
               '<span class="badge ' + (hasRecap ? 'badge-ok' : 'badge-step') + '">' + (hasRecap ? 'Disponibile' : 'Vuoto') + '</span>' +
             '</div>' +
             '<p class="module-card-desc" style="margin-top:6px;">' + escapeHtml(lastRecapLabel) + '</p>' +
           '</div>' +
-          '<button type="button" class="btn btn-sm" id="btn-open-last-recap"' + (hasRecap ? '' : ' disabled') + '>Apri Resoconto</button>' +
+          '<button type="button" class="btn btn-sm" id="btn-open-last-recap"' + (hasRecap ? '' : ' disabled') + '>' + icon('modules', 'recap') + ' Apri Resoconto</button>' +
         '</div>' +
         '<div class="module-card">' +
           '<div>' +
             '<div class="module-card-head">' +
-              '<h3 class="module-card-title">Camera di Rigenerazione</h3>' +
+              '<h3 class="module-card-title">' + icon('modules', 'regen') + ' Camera di Rigenerazione</h3>' +
               '<span class="badge ' + (regenRem > 0 ? 'badge-warn' : 'badge-ok') + '" data-cd-label="regen">' + (regenRem > 0 ? S.formatDuration(regenRem) : 'Pronta') + '</span>' +
             '</div>' +
-            '<p class="module-card-desc" style="margin-top:6px;">Ripristina al 100% Vita e Scudo senza consumare oggetti (ricarica 120s).</p>' +
+            '<p class="module-card-desc" style="margin-top:6px;">Ripristina al 100% ' + icon('stats', 'hp') + ' Vita e ' + icon('stats', 'shield') + ' Scudo senza consumare oggetti (ricarica 120s).</p>' +
           '</div>' +
-          '<button type="button" class="btn btn-primary btn-sm" id="btn-regen-chamber" data-cd-btn="regen"' + (regenRem > 0 ? ' disabled' : '') + '>' + (regenRem > 0 ? 'In ricarica (' + S.formatDuration(regenRem) + ')' : 'Rigenera Tutto') + '</button>' +
+          '<button type="button" class="btn btn-primary btn-sm" id="btn-regen-chamber" data-cd-btn="regen"' + (regenRem > 0 ? ' disabled' : '') + '>' + (regenRem > 0 ? 'In ricarica (' + S.formatDuration(regenRem) + ')' : icon('modules', 'regen') + ' Rigenera Tutto') + '</button>' +
         '</div>' +
         '<div class="module-card">' +
           '<div>' +
             '<div class="module-card-head">' +
-              '<h3 class="module-card-title">Capsula Rifornimenti</h3>' +
+              '<h3 class="module-card-title">' + icon('modules', 'supply') + ' Capsula Rifornimenti</h3>' +
               '<span class="badge ' + (supplyRem > 0 ? 'badge-warn' : 'badge-ok') + '" data-cd-label="supply">' + (supplyRem > 0 ? S.formatDuration(supplyRem) : 'Pronta') + '</span>' +
             '</div>' +
-            '<p class="module-card-desc" style="margin-top:6px;">Consegna 25–40 Munizioni in Stiva e 1 consumabile base (ricarica 240s).</p>' +
+            '<p class="module-card-desc" style="margin-top:6px;">Consegna 25–40 ' + icon('stats', 'ammo') + ' Munizioni in Stiva e 1 consumabile base (ricarica 240s).</p>' +
           '</div>' +
-          '<button type="button" class="btn btn-primary btn-sm" id="btn-supply-capsule" data-cd-btn="supply"' + (supplyRem > 0 ? ' disabled' : '') + '>' + (supplyRem > 0 ? 'In ricarica (' + S.formatDuration(supplyRem) + ')' : 'Apri Capsula') + '</button>' +
+          '<button type="button" class="btn btn-primary btn-sm" id="btn-supply-capsule" data-cd-btn="supply"' + (supplyRem > 0 ? ' disabled' : '') + '>' + (supplyRem > 0 ? 'In ricarica (' + S.formatDuration(supplyRem) + ')' : icon('modules', 'supply') + ' Apri Capsula') + '</button>' +
         '</div>' +
       '</div>' +
       '<div class="panel">' +
-        '<div class="panel-title"><span>Equipaggiamento Indossato & Armeria Nave</span><span class="badge badge-cyan">Deposito: ' + S.formatNumber((S.state.equipment.storage || []).length) + ' pezzi</span></div>' +
+        '<div class="panel-title"><span>' + icon('stats', 'shield') + ' Equipaggiamento Indossato &amp; Armeria Nave</span><span class="badge badge-cyan">Deposito: ' + S.formatNumber((S.state.equipment.storage || []).length) + ' pezzi</span></div>' +
         '<div class="grid-4">' +
           renderEquipSlotCard('helmet', true) +
           renderEquipSlotCard('suit', true) +
@@ -744,7 +756,7 @@
       '<div class="grid-2">' +
         '<div class="panel">' +
           '<div class="panel-title">' +
-            '<span>Zaino (Equipaggiato in Missione)</span>' +
+            '<span>' + icon('modules', 'backpack') + ' Zaino (Equipaggiato in Missione)</span>' +
             '<span class="weight-text">' + S.formatNumber(bpTotalW) + ' / ' + S.formatNumber(bpMaxW) + ' pt.</span>' +
           '</div>' +
           '<div class="progress-track" style="height:9px; margin-bottom:8px;">' +
@@ -752,11 +764,11 @@
             '<div class="progress-fill fill-items" style="width:' + bpItemsPct + '%" title="Oggetti"></div>' +
           '</div>' +
           '<div class="mission-option-meta">' +
-            '<span>Munizioni: <strong class="val-ammo">' + S.formatNumber(S.state.backpack.ammo) + '</strong> (<span class="weight-text">' + S.formatNumber(bpAmmoW) + ' pt.</span>)</span>' +
+            '<span>' + icon('stats', 'ammo') + ' Munizioni: <strong class="val-ammo">' + S.formatNumber(S.state.backpack.ammo) + '</strong> (<span class="weight-text">' + S.formatNumber(bpAmmoW) + ' pt.</span>)</span>' +
             '<span>Oggetti: <span class="weight-text">' + S.formatNumber(bpItemsW) + ' pt.</span></span>' +
           '</div>' +
           '<div class="ammo-transfer-bar">' +
-            '<span class="ammo-transfer-label">Sposta Munizioni → Stiva:</span>' +
+            '<span class="ammo-transfer-label">Sposta ' + icon('stats', 'ammo') + ' Munizioni → ' + icon('modules', 'cargo') + ' Stiva:</span>' +
             '<div class="btn-row" style="gap:6px;">' +
               '<button type="button" class="btn btn-ghost btn-sm" data-transfer-ammo="toCargo|10">-10</button>' +
               '<button type="button" class="btn btn-ghost btn-sm" data-transfer-ammo="toCargo|30">-30</button>' +
@@ -767,17 +779,17 @@
         '</div>' +
         '<div class="panel">' +
           '<div class="panel-title">' +
-            '<span>Stiva (Riserva della Nave)</span>' +
+            '<span>' + icon('modules', 'cargo') + ' Stiva (Riserva della Nave)</span>' +
             '<span class="weight-text">' + S.formatNumber(cargoItemsW) + ' / ' + S.formatNumber(cargoMaxW) + ' pt.</span>' +
           '</div>' +
           '<div class="progress-track" style="height:9px; margin-bottom:8px;">' +
             '<div class="progress-fill fill-items" style="width:' + cargoPct + '%"></div>' +
           '</div>' +
           '<div class="mission-option-meta">' +
-            '<span>Munizioni in Stiva: <strong class="val-ammo">' + S.formatNumber(S.state.cargo.ammo) + '</strong> (<span class="weight-text">Capienza ∞</span>)</span>' +
+            '<span>' + icon('stats', 'ammo') + ' Munizioni in Stiva: <strong class="val-ammo">' + S.formatNumber(S.state.cargo.ammo) + '</strong> (<span class="weight-text">Capienza ∞</span>)</span>' +
           '</div>' +
           '<div class="ammo-transfer-bar">' +
-            '<span class="ammo-transfer-label">Trasferisci Munizioni → Zaino:</span>' +
+            '<span class="ammo-transfer-label">Trasferisci ' + icon('stats', 'ammo') + ' Munizioni → ' + icon('modules', 'backpack') + ' Zaino:</span>' +
             '<div class="btn-row" style="gap:6px;">' +
               '<button type="button" class="btn btn-ghost btn-sm" data-transfer-ammo="toBackpack|10">+10</button>' +
               '<button type="button" class="btn btn-ghost btn-sm" data-transfer-ammo="toBackpack|30">+30</button>' +
@@ -790,18 +802,18 @@
       '<div class="grid-2">' +
         '<div class="panel">' +
           '<div class="panel-title">' +
-            '<span>Ricerca & Potenziamenti Nave</span>' +
+            '<span>' + icon('modules', 'upgrades') + ' Ricerca &amp; Potenziamenti Nave</span>' +
             '<span class="badge badge-cyan">Stiva Lv. ' + S.formatNumber(upgInfo.level) + ' / ' + S.formatNumber(upgInfo.maxLevel) + '</span>' +
           '</div>' +
           '<p class="section-subtitle" style="margin-bottom:10px;">Espandi la capienza degli oggetti nella Stiva di <span class="weight-text">+100 pt.</span> per livello (attuale: <span class="weight-text">' + S.formatNumber(upgInfo.currentMaxWeight) + ' pt.</span>' + (upgInfo.isMaxed ? ' · MASSIMO' : ' → <span class="weight-text">' + S.formatNumber(upgInfo.nextMaxWeight) + ' pt.</span>') + ').</p>' +
           '<button type="button" class="btn btn-primary" id="btn-upgrade-cargo"' + (upgInfo.isMaxed || S.state.player.credits < upgInfo.nextCost ? ' disabled' : '') + '>' +
             (upgInfo.isMaxed
               ? 'Capienza Stiva al Massimo'
-              : 'Potenzia Stiva (' + S.formatNumber(upgInfo.nextCost) + ' Crediti)') +
+              : icon('modules', 'upgrades') + ' Potenzia Stiva (' + icon('stats', 'credits') + ' ' + S.formatNumber(upgInfo.nextCost) + ' Crediti)') +
           '</button>' +
         '</div>' +
         '<div class="panel">' +
-          '<div class="panel-title"><span>Biblioteca di Bordo (Libri)</span><span class="badge badge-step">Step 5</span></div>' +
+          '<div class="panel-title"><span>' + icon('modules', 'library') + ' Biblioteca di Bordo (Libri)</span><span class="badge badge-step">Step 5</span></div>' +
           '<p class="section-subtitle">I Libri trovati durante le missioni e le esplorazioni verranno archiviati qui per la lettura integrale e sbloccheranno potenziamenti passivi permanenti.</p>' +
         '</div>' +
       '</div>'
@@ -817,26 +829,26 @@
     container.innerHTML = (
       '<div class="section-header">' +
         '<div>' +
-          '<h1 class="section-title">Opzioni, Salvataggio Locale & Statistiche</h1>' +
+          '<h1 class="section-title">' + icon('tabs', 'options') + ' Opzioni, Salvataggio Locale &amp; Statistiche</h1>' +
           '<p class="section-subtitle">Nessun salvataggio automatico online: copia manualmente il tuo codice alfanumerico per salvare i progressi.</p>' +
         '</div>' +
         '<span class="badge badge-cyan">Formato ' + escapeHtml(S.SAVE_PREFIX) + ' Retrocompatibile</span>' +
       '</div>' +
       '<div class="grid-2">' +
         '<div class="panel panel-highlight">' +
-          '<div class="panel-title"><span>Esporta Codice di Salvataggio</span><span class="badge badge-ok">Manuale</span></div>' +
+          '<div class="panel-title"><span>' + icon('modules', 'save') + ' Esporta Codice di Salvataggio</span><span class="badge badge-ok">Manuale</span></div>' +
           '<p class="section-subtitle" style="margin-bottom:8px;">Copia e conserva questo codice alfanumerico al sicuro. Resterà compatibile anche con tutti i futuri aggiornamenti del gioco.</p>' +
           '<textarea id="export-code-box" class="code-box" readonly aria-label="Codice di salvataggio">' + escapeHtml(saveCode) + '</textarea>' +
           '<div class="btn-row" style="margin-top:10px;">' +
-            '<button type="button" class="btn btn-primary" id="btn-copy-save">Copia Codice</button>' +
+            '<button type="button" class="btn btn-primary" id="btn-copy-save">' + icon('modules', 'save') + ' Copia Codice</button>' +
           '</div>' +
         '</div>' +
         '<div class="panel">' +
-          '<div class="panel-title"><span>Carica Codice di Salvataggio</span></div>' +
+          '<div class="panel-title"><span>' + icon('modules', 'save') + ' Carica Codice di Salvataggio</span></div>' +
           '<p class="section-subtitle" style="margin-bottom:8px;">Incolla un codice salvataggio precedentemente esportato per ripristinare i tuoi progressi.</p>' +
           '<textarea id="import-code-input" class="code-box" placeholder="Incolla qui il codice (es. SOS1...)"></textarea>' +
           '<div class="btn-row" style="margin-top:10px;">' +
-            '<button type="button" class="btn" id="btn-load-save">Carica Salvataggio</button>' +
+            '<button type="button" class="btn" id="btn-load-save">' + icon('modules', 'save') + ' Carica Salvataggio</button>' +
           '</div>' +
           (importFeedback.text
             ? '<div class="feedback-line ' + (importFeedback.ok ? 'feedback-ok' : 'feedback-err') + '">' + escapeHtml(importFeedback.text) + '</div>'
@@ -846,10 +858,10 @@
       '<div class="grid-2">' +
         '<div class="panel">' +
           '<div class="panel-title">' +
-            '<span>Cambio Nome Personaggio</span>' +
+            '<span>' + icon('items', 'chip_identita') + ' Cambio Nome Personaggio</span>' +
             '<span class="weight-text">Chip Cambio Identità: 0 pt. (×' + S.formatNumber(tokenCount) + ')</span>' +
           '</div>' +
-          '<p class="section-subtitle" style="margin-bottom:10px;">Richiede un oggetto consumabile <strong>Chip Cambio Identità</strong> (presente ×1 nella Stiva iniziale). Senza chip il cambio nome resta bloccato.</p>' +
+          '<p class="section-subtitle" style="margin-bottom:10px;">Richiede un oggetto consumabile <strong>' + icon('items', 'chip_identita') + ' Chip Cambio Identità</strong> (presente ×1 nella Stiva iniziale). Senza chip il cambio nome resta bloccato.</p>' +
           '<div class="btn-row">' +
             '<input type="text" id="rename-input" class="input-field" maxlength="20" placeholder="Nuovo nome (2-20 caratteri)" style="flex:1; min-width:180px;"' + (!canRename ? ' disabled' : '') + '>' +
             '<button type="button" class="btn btn-primary" id="btn-rename-player"' + (!canRename ? ' disabled' : '') + '>Cambia Nome</button>' +
@@ -859,10 +871,10 @@
             : '') +
         '</div>' +
         '<div class="panel">' +
-          '<div class="panel-title"><span>Statistiche di Gioco & Roadmap</span><span class="badge badge-ok">Alpha 1 (Step 3)</span></div>' +
+          '<div class="panel-title"><span>' + icon('modules', 'recap') + ' Statistiche di Gioco &amp; Roadmap</span><span class="badge badge-ok">Alpha 1 (Step 3)</span></div>' +
           '<p class="section-subtitle" style="margin-bottom:10px;">Alieni uccisi: <strong class="mono">' + S.formatNumber(stats.aliensKilled) + '</strong> · Colpi sparati: <strong class="mono">' + S.formatNumber(stats.shotsFired) + '</strong> · Morti: <strong class="mono">' + S.formatNumber(stats.deaths) + '</strong></p>' +
           '<div class="btn-row">' +
-            '<button type="button" class="btn" id="btn-open-stats">Consulta Statistiche Complete</button>' +
+            '<button type="button" class="btn" id="btn-open-stats">' + icon('modules', 'recap') + ' Consulta Statistiche Complete</button>' +
           '</div>' +
         '</div>' +
       '</div>'
@@ -880,10 +892,10 @@
       { label: 'Missioni Difficoltà 4 vinte', val: S.formatNumber(st.missionsWon[4]) },
       { label: 'Morti subite', val: S.formatNumber(st.deaths) },
       { label: 'Fughe riuscite', val: S.formatNumber(st.escapes) },
-      { label: 'Camera di Rigenerazione usata', val: S.formatNumber(st.regenUsed) },
-      { label: 'Capsule Rifornimenti aperte', val: S.formatNumber(st.suppliesClaimed) },
-      { label: 'Crediti totali guadagnati', val: S.formatNumber(st.creditsEarned) },
-      { label: 'Liquidi Plusvalenti guadagnati', val: S.formatNumber(st.liquidsEarned) }
+      { label: icon('modules', 'regen') + ' Camera di Rigenerazione usata', val: S.formatNumber(st.regenUsed) },
+      { label: icon('modules', 'supply') + ' Capsule Rifornimenti aperte', val: S.formatNumber(st.suppliesClaimed) },
+      { label: icon('stats', 'credits') + ' Crediti totali guadagnati', val: S.formatNumber(st.creditsEarned) },
+      { label: icon('stats', 'liquids') + ' Liquidi Plusvalenti guadagnati', val: S.formatNumber(st.liquidsEarned) }
     ];
     var html = '<div class="stats-grid">';
     var i;
@@ -908,20 +920,24 @@
       dropsHtml = '<p class="section-subtitle">Nessun oggetto droppato in questa missione.</p>';
     } else {
       dropsHtml = '<div class="drop-list">';
-      var i, d;
+      var i, d, eqSlot, itemDef, dIcon;
       for (i = 0; i < recap.drops.length; i += 1) {
         d = recap.drops[i];
         if (d.kind === 'equip') {
+          eqSlot = S.EQUIP_SLOTS[d.slot];
+          dIcon = eqSlot && eqSlot.icon ? eqSlot.icon + ' ' : '';
           dropsHtml += (
             '<div class="drop-row">' +
-              '<div class="drop-row-left"><span class="equip-text-' + escapeHtml(d.slot) + '"><strong>' + escapeHtml(d.name) + '</strong></span> <span class="badge badge-cyan">' + escapeHtml(d.uid) + ' · ' + S.formatNumber(d.maxDd) + ' Dd</span></div>' +
+              '<div class="drop-row-left"><span class="equip-text-' + escapeHtml(d.slot) + '"><strong>' + escapeHtml(dIcon + d.name) + '</strong></span> <span class="badge badge-cyan">' + escapeHtml(d.uid) + ' · ' + S.formatNumber(d.maxDd) + ' Dd</span></div>' +
               '<div class="drop-row-right"><span class="badge badge-ok">' + escapeHtml(d.destination) + '</span></div>' +
             '</div>'
           );
         } else {
+          itemDef = S.ITEMS[d.id];
+          dIcon = itemDef && itemDef.icon ? itemDef.icon + ' ' : '';
           dropsHtml += (
             '<div class="drop-row">' +
-              '<div class="drop-row-left"><strong>' + escapeHtml(d.name) + ' ×' + S.formatNumber(d.qty) + '</strong></div>' +
+              '<div class="drop-row-left"><strong>' + escapeHtml(dIcon + d.name) + ' ×' + S.formatNumber(d.qty) + '</strong></div>' +
               '<div class="drop-row-right"><span class="weight-text">' + S.formatNumber(d.weight * d.qty) + ' pt.</span><span class="badge badge-cyan">' + escapeHtml(d.destination) + '</span></div>' +
             '</div>'
           );
@@ -933,27 +949,27 @@
     var gs = recap.globalScore || {};
     var gsHtml =
       '<div class="panel" style="margin-bottom:12px;">' +
-        '<div class="panel-title"><span>Global Score (' + escapeHtml(recap.planetName) + ' Diff. ' + recap.difficulty + ')</span><span class="badge badge-cyan">' + S.formatNumber(gs.streakShown || 0) + ' / ' + S.formatNumber(gs.target || 10) + '</span></div>' +
+        '<div class="panel-title"><span>' + icon('modules', 'recap') + ' Global Score (' + escapeHtml(recap.planetName) + ' — Difficoltà ' + recap.difficulty + ')</span><span class="badge badge-cyan">' + S.formatNumber(gs.streakShown || 0) + ' / ' + S.formatNumber(gs.target || 10) + '</span></div>' +
         (gs.completed && gs.reward
-          ? '<p class="feedback-line feedback-ok" style="margin-top:0;">STREAK 10/10 COMPLETATA! Premio ottenuto: +' + S.formatNumber(gs.reward.liquids) + ' Liquidi Plusvalenti e +' + S.formatNumber(gs.reward.credits) + ' Crediti!</p>'
+          ? '<p class="feedback-line feedback-ok" style="margin-top:0;">STREAK 10/10 COMPLETATA! Premio ottenuto: +' + S.formatNumber(gs.reward.liquids) + ' ' + icon('stats', 'liquids') + ' Liquidi Plusvalenti e +' + S.formatNumber(gs.reward.credits) + ' ' + icon('stats', 'credits') + ' Crediti!</p>'
           : '<p class="section-subtitle">Progresso serie attuale: ' + S.formatNumber(gs.streakAfter || 0) + ' / ' + S.formatNumber(gs.target || 10) + '</p>') +
       '</div>';
 
     var body = (
-      '<p class="section-subtitle" style="margin-bottom:10px;"><strong>' + escapeHtml(recap.planetName) + ' — Difficoltà ' + recap.difficulty + ': ' + escapeHtml(recap.missionName) + '</strong></p>' +
+      '<p class="section-subtitle" style="margin-bottom:10px;"><strong>' + icon('stats', 'planet') + ' ' + escapeHtml(recap.planetName) + ' — Difficoltà ' + recap.difficulty + ': ' + escapeHtml(recap.missionName) + '</strong></p>' +
       '<div class="recap-summary-grid">' +
-        '<div class="stat-row"><span class="stat-row-label">Turni impiegati</span><span class="stat-row-val">' + S.formatNumber(recap.turns) + '</span></div>' +
-        '<div class="stat-row"><span class="stat-row-label">Alieni abbattuti</span><span class="stat-row-val">' + S.formatNumber(recap.aliensKilled) + '</span></div>' +
-        '<div class="stat-row"><span class="stat-row-label">EXP guadagnata</span><span class="stat-row-val">+' + S.formatNumber(recap.expGained) + '</span></div>' +
-        '<div class="stat-row"><span class="stat-row-label">Crediti missione</span><span class="stat-row-val val-credits">+' + S.formatNumber(recap.creditsEarned) + '</span></div>' +
-        '<div class="stat-row"><span class="stat-row-label">Danni subiti</span><span class="stat-row-val">' + S.formatNumber(recap.damageTaken) + '</span></div>' +
-        '<div class="stat-row"><span class="stat-row-label">Livelli saliti</span><span class="stat-row-val">+' + S.formatNumber(recap.levelsGained) + '</span></div>' +
+        '<div class="stat-row"><span class="stat-row-label">Turni impiegati</span><span class="stat-row-val">' + formatRecapValue(recap.turns) + '</span></div>' +
+        '<div class="stat-row"><span class="stat-row-label">Alieni uccisi</span><span class="stat-row-val">' + formatRecapValue(recap.aliensKilled) + '</span></div>' +
+        '<div class="stat-row"><span class="stat-row-label">' + icon('stats', 'exp') + ' EXP ottenuta</span><span class="stat-row-val">' + formatRecapValue(recap.expGained, '+') + '</span></div>' +
+        '<div class="stat-row"><span class="stat-row-label">' + icon('stats', 'credits') + ' Crediti missione</span><span class="stat-row-val val-credits">' + formatRecapValue(recap.creditsEarned, '+') + '</span></div>' +
+        '<div class="stat-row"><span class="stat-row-label">' + icon('stats', 'hp') + ' Danni subiti</span><span class="stat-row-val">' + formatRecapValue(recap.damageTaken) + '</span></div>' +
+        '<div class="stat-row"><span class="stat-row-label">' + icon('stats', 'exp') + ' Livelli ottenuti</span><span class="stat-row-val">' + formatRecapValue(recap.levelsGained, '+') + '</span></div>' +
       '</div>' +
       gsHtml +
-      '<div class="panel-title" style="font-size:0.92rem;"><span>Oggetti & Equipaggiamenti Droppati</span></div>' +
+      '<div class="panel-title" style="font-size:0.92rem;"><span>Oggetti &amp; Equipaggiamenti Droppati</span></div>' +
       dropsHtml
     );
-    openModal('Resoconto Missione Completata', body);
+    openModal(icon('modules', 'recap') + ' Resoconto Missione Completata', body);
   }
 
   function openDefeatModal(summary) {
@@ -1138,7 +1154,7 @@
     var diffBtn = e.target.closest('[data-select-diff]');
     if (diffBtn) {
       var diff = S.toInt(diffBtn.getAttribute('data-select-diff'), 0);
-      var selRes = S.selectMission(diff, false);
+      var selRes = S.selectMission(diff, diff > 0);
       if (!selRes.ok) {
         showToast(selRes.message, 'err');
       }

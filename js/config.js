@@ -34,12 +34,58 @@
 
   window.Survival.COMBAT_RULES = {
     expPerAlien: 1,
+    missChancePermille: 83,
     escapeRollTarget: 18,
     escapeExpLossPct: 30,
     deathExpLossPct: 75,
     deathCreditsLossPct: 50,
     deathRespawnHp: 5,
     deathRespawnShield: 0
+  };
+
+  window.Survival.ICONS = {
+    tabs: {
+      map: '🗺️',
+      mission: '🎯',
+      ship: '🚀',
+      options: '⚙️'
+    },
+    stats: {
+      exp: '⭐',
+      hp: '❤️',
+      shield: '🛡️',
+      credits: '💳',
+      liquids: '⚗️',
+      ammo: '🔋',
+      planet: '🌍'
+    },
+    equip: {
+      helmet: '👩‍🚀',
+      suit: '🥋',
+      boots: '👣',
+      rifle: '🔫'
+    },
+    items: {
+      snack_70g: '🍫',
+      medikit: '💊',
+      fluido_energizzante: '⚡',
+      caricatore_std: '📦',
+      chip_identita: '🪪',
+      repair_specific: '🔧',
+      repair_universal: '🧰'
+    },
+    modules: {
+      regen: '🧬',
+      supply: '🪂',
+      backpack: '🎒',
+      cargo: '📦',
+      upgrades: '🔬',
+      library: '📚',
+      recap: '📊',
+      mechanic: '👨‍🔧',
+      weatherCenter: '🛰️',
+      save: '💾'
+    }
   };
 
   window.Survival.LEVEL_THRESHOLDS = [
@@ -78,6 +124,7 @@
   window.Survival.EQUIP_SLOTS = {
     helmet: {
       id: 'helmet',
+      icon: '👩‍🚀',
       label: 'Casco Spaziale',
       role: 'vs Meteo',
       cssClass: 'equip-helmet',
@@ -85,6 +132,7 @@
     },
     suit: {
       id: 'suit',
+      icon: '🥋',
       label: 'Tuta Spaziale',
       role: 'vs Danni',
       cssClass: 'equip-suit',
@@ -92,6 +140,7 @@
     },
     boots: {
       id: 'boots',
+      icon: '👣',
       label: 'Stivali Spaziali',
       role: 'Esplorazione Pianeta',
       cssClass: 'equip-boots',
@@ -99,6 +148,7 @@
     },
     rifle: {
       id: 'rifle',
+      icon: '🔫',
       label: 'Fucile Spaziale',
       role: 'vs Alieni Mutati',
       cssClass: 'equip-rifle',
@@ -192,6 +242,7 @@
   var ITEMS = {
     snack_70g: {
       id: 'snack_70g',
+      icon: '🍫',
       name: 'Snack 70g',
       category: 'consumable',
       weight: 5,
@@ -200,6 +251,7 @@
     },
     medikit: {
       id: 'medikit',
+      icon: '💊',
       name: 'Medikit',
       category: 'consumable',
       weight: 20,
@@ -208,6 +260,7 @@
     },
     fluido_energizzante: {
       id: 'fluido_energizzante',
+      icon: '⚡',
       name: 'Fluido Energizzante',
       category: 'consumable',
       weight: 10,
@@ -216,6 +269,7 @@
     },
     caricatore_std: {
       id: 'caricatore_std',
+      icon: '📦',
       name: 'Caricatore Standard (x30)',
       category: 'ammo',
       weight: 30,
@@ -224,6 +278,7 @@
     },
     chip_identita: {
       id: 'chip_identita',
+      icon: '🪪',
       name: 'Chip Cambio Identità',
       category: 'special',
       weight: 0,
@@ -269,6 +324,7 @@
 
         ITEMS[itemId] = {
           id: itemId,
+          icon: target.key === 'any' ? '🧰' : '🔧',
           name: 'Riparatore ' + target.label + ' Classe ' + cls.label,
           category: 'repair',
           weight: cls.weight,
@@ -297,12 +353,14 @@
       locations: [
         {
           id: 'meccanico_spaziale',
+          icon: '👨‍🔧',
           name: 'Meccanico Spaziale',
           tag: 'Viaggi & Rotte',
           description: 'Consente di preparare la Nave Spaziale per i viaggi interplanetari verso nuovi pianeti e satelliti.'
         },
         {
           id: 'centro_ricerca_meteo',
+          icon: '🛰️',
           name: 'Centro di Ricerca Meteo',
           tag: 'Analisi Ambientale',
           description: 'Archivio scientifico per consultare gli effetti e i modificatori di ciascun evento meteorologico.'
