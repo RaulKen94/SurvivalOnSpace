@@ -442,7 +442,7 @@
       var actionHtml = '';
       if (ms.completedReady) {
         actionHtml = (
-          '<p class="section-subtitle" style="margin-bottom:10px; color:var(--weight-green);">Tutti gli alieni sono stati eliminati! Premi il pulsante qui sotto per completare la missione, raccogliere i drop e tornare al riepilogo.</p>' +
+          '<p class="section-subtitle notice-ok" style="margin-bottom:10px;">Tutti gli alieni sono stati eliminati! Premi il pulsante qui sotto per completare la missione, raccogliere i drop e tornare al riepilogo.</p>' +
           '<button type="button" class="btn btn-success btn-combat-big" id="btn-complete-mission">Completa Missione</button>'
         );
       } else if (ammoLeft > 0) {
@@ -452,7 +452,7 @@
         );
       } else {
         actionHtml = (
-          '<p class="section-subtitle" style="margin-bottom:10px; color:#ff8fa3;"><strong>Munizioni esaurite!</strong> Usa un Caricatore Standard nello Zaino oppure tenta la fuga d\'emergenza (tiro 1d20, serve almeno 18; in caso di successo perdi il 30% dell\'EXP attuale, altrimenti subisci il contrattacco).</p>' +
+          '<p class="section-subtitle notice-danger" style="margin-bottom:10px;"><strong>Munizioni esaurite!</strong> Usa un Caricatore Standard nello Zaino oppure tenta la fuga d\'emergenza (tiro 1d20, serve almeno 18; in caso di successo perdi il 30% dell\'EXP attuale, altrimenti subisci il contrattacco).</p>' +
           '<button type="button" class="btn btn-danger btn-combat-big" id="btn-escape-mission">FUGGI (Tira 1d20 — serve ≥ 18)</button>'
         );
       }
@@ -477,7 +477,7 @@
 
       container.innerHTML = (
         '<div class="combat-banner">' +
-          '<div class="section-header" style="border-bottom-color:rgba(0,229,255,0.28); padding-bottom:6px;">' +
+          '<div class="section-header" style="padding-bottom:6px;">' +
             '<div>' +
               '<h1 class="section-title">' + escapeHtml(planet.name) + ' · Difficoltà ' + ms.selectedDifficulty + ' — ' + escapeHtml(mCfg ? mCfg.name : '') + '</h1>' +
               '<p class="section-subtitle">Mission = TRUE · Tutte le altre schede sono bloccate fino al termine della missione.</p>' +
@@ -958,10 +958,10 @@
 
   function openDefeatModal(summary) {
     var body = (
-      '<p class="section-subtitle" style="margin-bottom:12px; color:#ff8fa3;">La tua Vita è scesa a zero durante <strong>' + escapeHtml(summary.missionName) + '</strong> su ' + escapeHtml(summary.planetName) + '.</p>' +
+      '<p class="section-subtitle notice-danger" style="margin-bottom:12px;">La tua Vita è scesa a zero durante <strong>' + escapeHtml(summary.missionName) + '</strong> su ' + escapeHtml(summary.planetName) + '.</p>' +
       '<div class="recap-summary-grid">' +
-        '<div class="stat-row"><span class="stat-row-label">EXP persa (-75%)</span><span class="stat-row-val" style="color:var(--danger);">-' + S.formatNumber(summary.expLost) + '</span></div>' +
-        '<div class="stat-row"><span class="stat-row-label">Crediti persi (-50%)</span><span class="stat-row-val" style="color:var(--danger);">-' + S.formatNumber(summary.creditsLost) + '</span></div>' +
+        '<div class="stat-row"><span class="stat-row-label">EXP persa (-75%)</span><span class="stat-row-val stat-val-danger">-' + S.formatNumber(summary.expLost) + '</span></div>' +
+        '<div class="stat-row"><span class="stat-row-label">Crediti persi (-50%)</span><span class="stat-row-val stat-val-danger">-' + S.formatNumber(summary.creditsLost) + '</span></div>' +
         '<div class="stat-row"><span class="stat-row-label">Alieni abbattuti</span><span class="stat-row-val">' + S.formatNumber(summary.aliensKilled) + ' / ' + S.formatNumber(summary.aliensTotal) + '</span></div>' +
         '<div class="stat-row"><span class="stat-row-label">Stato rientro</span><span class="stat-row-val">' + S.formatNumber(summary.respawnHp) + ' Vita · 0 Scudo</span></div>' +
       '</div>' +
@@ -972,9 +972,9 @@
 
   function openEscapeModal(summary) {
     var body = (
-      '<p class="section-subtitle" style="margin-bottom:12px; color:var(--weight-green);">Tiro 1d20 riuscito con <strong>' + S.formatNumber(summary.roll) + ' / 20</strong>! Sei riuscito a sganciarti da <strong>' + escapeHtml(summary.missionName) + '</strong>.</p>' +
+      '<p class="section-subtitle notice-ok" style="margin-bottom:12px;">Tiro 1d20 riuscito con <strong>' + S.formatNumber(summary.roll) + ' / 20</strong>! Sei riuscito a sganciarti da <strong>' + escapeHtml(summary.missionName) + '</strong>.</p>' +
       '<div class="recap-summary-grid">' +
-        '<div class="stat-row"><span class="stat-row-label">EXP persa (-30%)</span><span class="stat-row-val" style="color:var(--warning);">-' + S.formatNumber(summary.expLost) + '</span></div>' +
+        '<div class="stat-row"><span class="stat-row-label">EXP persa (-30%)</span><span class="stat-row-val stat-val-warn">-' + S.formatNumber(summary.expLost) + '</span></div>' +
         '<div class="stat-row"><span class="stat-row-label">Turno di fuga</span><span class="stat-row-val">' + S.formatNumber(summary.turn) + '</span></div>' +
       '</div>' +
       '<p class="section-subtitle">Sei rientrato sulla tua Nave Spaziale su ' + escapeHtml(summary.planetName) + '.</p>'
