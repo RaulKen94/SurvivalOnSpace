@@ -101,8 +101,7 @@
       levelsGained: 0,
       statuses: [],
       weather: null,
-      lastShot: null,
-      log: []
+      lastShot: null
     };
   }
 
@@ -393,12 +392,12 @@
     return { ok: true };
   }
 
-  function cancelSelectedMission() {
+  function cancelSelectedMission(targetTab) {
     if (S.state.mission.active) {
       return { ok: false, message: 'Impossibile annullare una missione già iniziata.' };
     }
     S.state.mission.selectedDifficulty = 0;
-    S.state.ui.activeTab = 'ship';
+    S.state.ui.activeTab = targetTab === 'map' ? 'map' : 'ship';
     notifyUI();
     return { ok: true };
   }
@@ -689,19 +688,6 @@
     return null;
   }
 
-  function pushMissionLog(text) {
-    if (!S.state.mission.active) {
-      return;
-    }
-    S.state.mission.log.unshift({
-      turn: S.state.mission.turn,
-      text: String(text)
-    });
-    if (S.state.mission.log.length > 40) {
-      S.state.mission.log.length = 40;
-    }
-  }
-
   function useItem(source, itemId, targetEquipUid) {
     if (source !== 'backpack' && source !== 'cargo') {
       return { ok: false, message: 'Origine oggetto non valida.' };
@@ -807,9 +793,6 @@
       return { ok: false, message: 'Questo oggetto non può essere usato direttamente.' };
     }
 
-    if (S.state.mission.active) {
-      pushMissionLog('Oggetto usato — ' + msg);
-    }
     notifyUI();
     return { ok: true, message: msg };
   }
@@ -955,10 +938,8 @@
       levelsGained: 0,
       statuses: [],
       weather: null,
-      lastShot: null,
-      log: []
+      lastShot: null
     };
-    pushMissionLog('Missione avviata su ' + planet.name + ' (Diff. ' + diff + ' — ' + missionCfg.name + '): ' + aliensTotal + ' alieni da abbattere.');
     S.state.ui.activeTab = 'mission';
     notifyUI();
     return { ok: true };
@@ -1042,13 +1023,6 @@
     var finalDmg = Math.max(0, rawDmg - suitRed);
     var dmgRes = applyDamageToPlayer(finalDmg);
 
-    var atkDetails = 'Contrattacco alieno: ' + finalDmg + ' danni';
-    if (suitRed > 0) {
-      atkDetails += ' (Tuta -' + suitRed + ')';
-    }
-    atkDetails += ' -> Scudo -' + dmgRes.shieldAbsorbed + ', Vita -' + dmgRes.hpLost + '.';
-    pushMissionLog(atkDetails);
-
     return {
       damage: finalDmg,
       shieldAbsorbed: dmgRes.shieldAbsorbed,
@@ -1079,7 +1053,6 @@
         leveledUp: false,
         newLevel: S.state.player.level
       };
-      pushMissionLog('Colpo mancato! (MISS — nessun alieno ucciso).');
       notifyUI();
       return {
         ok: true,
@@ -1105,15 +1078,8 @@
       newLevel: expRes.newLevel
     };
 
-    var shotMsg = 'Sparo a segno: -1 Alieno (+' + expRes.expAdded + ' EXP).';
-    if (expRes.leveledUp) {
-      shotMsg += ' LEVEL UP! Livello ' + expRes.newLevel + ' raggiunto (Vita e Scudo al 100%).';
-    }
-    pushMissionLog(shotMsg);
-
     if (S.state.mission.aliensLeft === 0) {
       S.state.mission.completedReady = true;
-      pushMissionLog('Settore ripulito! Premi "Completa Missione" per ritirare le ricompense.');
       notifyUI();
       return {
         ok: true,
@@ -1194,7 +1160,6 @@
       return { ok: true, outcome: 'escaped', summary: summary };
     }
 
-    pushMissionLog('Fuga fallita (1d20: ' + roll + ', serve ' + S.COMBAT_RULES.escapeRollTarget + '+)! Subisci il contrattacco.');
     var combatRes = resolveCombatDamagePhase(planet, missionCfg);
     resolveTurnIncrementPhase();
     if (S.state.player.hp <= 0) {

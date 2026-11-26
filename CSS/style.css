@@ -24,7 +24,7 @@
   --border-light: rgba(255, 255, 255, 0.26);
   --border-light-strong: rgba(255, 255, 255, 0.56);
 
-  --weight-green: #39ff88;
+  --weight-green: #10b981;
   --weight-bg: #072217;
 
   --hp-color: #ef4444;
@@ -75,17 +75,27 @@ body {
   font-family: var(--font-mono);
 }
 
-/* Tutti i pesi sempre in verde chiaro fluo ad alto contrasto */
+/* Tutti i pesi in un unico verde smeraldo vivo senza badge */
 .weight-text {
-  display: inline-block;
+  display: inline;
   color: var(--weight-green);
-  background: var(--weight-bg);
-  border: 1px solid rgba(57, 255, 136, 0.42);
-  border-radius: 5px;
-  padding: 1px 6px;
   font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 0.9em;
+  font-weight: 800;
+  font-size: 0.94em;
+}
+
+/* Quantità oggetti ben visibile senza badge */
+.item-qty {
+  display: inline-block;
+  margin: 0 3px;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 1.08em;
+  color: #063d50;
+}
+
+.panel-title .item-qty {
+  color: #fde047;
 }
 
 /* Finestra unica principale stile App */
@@ -769,34 +779,78 @@ body {
   margin-top: 10px;
 }
 
-/* Liste Inventario in Panna Chiara */
+/* Liste Inventario in Panna Chiara con tile tarate a griglia */
 .inv-item-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
   margin-top: 10px;
 }
 
-.inv-item-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 10px;
-  border-radius: 6px;
+.inv-item-card {
+  border-radius: 7px;
   background: var(--cream);
   border: 1px solid var(--cream-border);
   color: var(--text-dark);
+  overflow: hidden;
+}
+
+.inv-item-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(88px, auto);
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  color: var(--text-dark);
   font-size: 0.84rem;
+}
+
+.panel .inv-item-list > .inv-item-row {
+  border-radius: 7px;
+  background: var(--cream);
+  border: 1px solid var(--cream-border);
+}
+
+.inv-item-row-clickable {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 7px;
+  background: var(--cream);
+  border: 1px solid var(--cream-border);
+  font-family: var(--font-sans);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.inv-item-row-clickable:hover {
+  background: var(--cream-hover);
+  border-color: var(--bg-hud-deep);
 }
 
 .inv-item-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-width: 150px;
-  flex: 1;
+  min-width: 0;
+}
+
+.inv-item-clickable {
+  cursor: pointer;
+  border-radius: 5px;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  transition: background-color 0.15s ease;
+}
+
+.inv-item-clickable:hover {
+  background: rgba(6, 61, 80, 0.08);
+}
+
+.inv-item-title-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 6px;
 }
 
 .inv-item-sub {
@@ -806,9 +860,108 @@ body {
 
 .inv-item-actions {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
+  justify-content: flex-end;
+  min-width: 88px;
+}
+
+/* Selettore quantità inline per scambio Zaino <-> Stiva */
+.transfer-picker {
+  padding: 9px 10px;
+  background: var(--cream-alt);
+  border-top: 1px solid var(--cream-border);
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.transfer-picker-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.transfer-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
+  align-items: center;
+}
+
+.transfer-picker-grid.has-step10 {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+
+.transfer-picker-grid .btn {
+  width: 100%;
+  min-width: 0;
+  padding: 4px 4px;
+  background: var(--cream-hover);
+  border-color: #bfa97e;
+  color: var(--text-dark);
+}
+
+.transfer-picker-grid .btn:hover:not(:disabled) {
+  background: #e8d9b5;
+  border-color: var(--bg-hud);
+}
+
+.transfer-qty-input {
+  width: 100%;
+  min-width: 0;
+  height: 32px;
+  padding: 3px 4px;
+  border-radius: 6px;
+  border: 1px solid #bfa97e;
+  background: #ffffff;
+  color: var(--text-dark);
+  font-family: var(--font-mono);
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.transfer-picker-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.transfer-picker-actions .btn {
+  width: 100%;
+}
+
+/* Azioni Briefing Missione: sinistra impilati (Nave + Mappa), destra Start */
+.briefing-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  align-items: stretch;
+  margin-top: 14px;
+}
+
+.briefing-cancel-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.briefing-cancel-col .btn {
+  width: 100%;
+}
+
+.briefing-start-col {
+  display: flex;
+}
+
+.briefing-start-col .btn {
+  width: 100%;
+  min-height: 100%;
+  font-size: 0.96rem;
 }
 
 .ammo-transfer-bar {
@@ -913,32 +1066,6 @@ body {
 
 .combat-stat-value.aliens-val {
   color: #b91c1c;
-}
-
-.combat-log {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 220px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.combat-log-entry {
-  padding: 7px 10px;
-  border-radius: 6px;
-  background: var(--cream);
-  border: 1px solid var(--cream-border);
-  border-left: 4px solid var(--bg-hud-deep);
-  font-size: 0.82rem;
-  color: var(--text-dark);
-}
-
-.combat-log-turn {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  color: var(--bg-hud);
-  margin-right: 6px;
 }
 
 /* Box risultato ultimo sparo in Missione */
@@ -1061,6 +1188,10 @@ body {
   border-radius: 12px;
   padding: 16px;
   box-shadow: 0 12px 42px rgba(0, 0, 0, 0.55);
+}
+
+.modal-card.modal-wide {
+  max-width: 980px;
 }
 
 .modal-header {
@@ -1289,6 +1420,12 @@ body {
   .combat-counters {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 6px;
+  }
+  .briefing-actions {
+    grid-template-columns: 1fr;
+  }
+  .transfer-picker-grid.has-step10 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
   .combat-stat-value {
     font-size: 1rem;

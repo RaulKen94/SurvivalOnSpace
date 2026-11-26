@@ -66,7 +66,7 @@
       rifle: '🔫'
     },
     items: {
-      snack_70g: '🍫',
+      snack_70g: '🍪',
       medikit: '💊',
       fluido_energizzante: '⚡',
       caricatore_std: '📦',
@@ -242,7 +242,7 @@
   var ITEMS = {
     snack_70g: {
       id: 'snack_70g',
-      icon: '🍫',
+      icon: '🍪',
       name: 'Snack 70g',
       category: 'consumable',
       weight: 5,

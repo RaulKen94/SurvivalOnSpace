@@ -7,6 +7,8 @@
   var cooldownTimerId = null;
   var importFeedback = { text: '', ok: true };
   var renameFeedback = { text: '', ok: true };
+  var activeModalKind = null;
+  var transferPicker = null;
 
   function escapeHtml(value) {
     return String(value === undefined || value === null ? '' : value)
@@ -47,12 +49,17 @@
     }, 3200);
   }
 
-  function openModal(title, bodyHtml) {
+  function openModal(title, bodyHtml, options) {
     var root = document.getElementById('modal-root');
+    var cardEl = root ? root.querySelector('.modal-card') : null;
     var titleEl = document.getElementById('modal-title');
     var bodyEl = document.getElementById('modal-body');
     if (!root || !titleEl || !bodyEl) {
       return;
+    }
+    activeModalKind = options && options.kind ? options.kind : null;
+    if (cardEl) {
+      cardEl.classList.toggle('modal-wide', Boolean(options && options.wide));
     }
     titleEl.textContent = title;
     bodyEl.innerHTML = bodyHtml;
@@ -61,6 +68,12 @@
 
   function closeModal() {
     var root = document.getElementById('modal-root');
+    var cardEl = root ? root.querySelector('.modal-card') : null;
+    activeModalKind = null;
+    transferPicker = null;
+    if (cardEl) {
+      cardEl.classList.remove('modal-wide');
+    }
     if (root) {
       root.classList.add('hidden');
     }
@@ -135,7 +148,6 @@
         '<div class="equip-card ' + slotMeta.cssClass + '">' +
           '<div class="equip-slot-label">' +
             '<span>' + escapeHtml(slotTitle) + '</span>' +
-            '<span>' + escapeHtml(slotMeta.role) + '</span>' +
           '</div>' +
           '<div class="equip-model-name">Slot vuoto</div>' +
           '<div class="equip-stats-row"><span>Pt: 0</span><span>Dd: 0 / 0</span></div>' +
@@ -150,7 +162,6 @@
       '<div class="equip-card ' + slotMeta.cssClass + (isBroken ? ' equip-broken' : '') + '">' +
         '<div class="equip-slot-label">' +
           '<span>' + escapeHtml(slotTitle) + '</span>' +
-          '<span>' + escapeHtml(slotMeta.role) + '</span>' +
         '</div>' +
         '<div class="equip-model-name">' + escapeHtml(model ? model.name : inst.modelId) + '</div>' +
         '<div class="equip-stats-row">' +
@@ -404,15 +415,17 @@
       canUse = id !== 'chip_identita';
       itemIcon = def.icon ? def.icon + ' ' : '';
       html += (
-        '<div class="inv-item-row">' +
-          '<div class="inv-item-info">' +
-            '<span><strong>' + escapeHtml(itemIcon + def.name) + '</strong> ×' + S.formatNumber(qty) + ' · <span class="weight-text">' + S.formatNumber(lineW) + ' pt.</span></span>' +
-            '<span class="inv-item-sub">' + escapeHtml(def.description) + '</span>' +
-          '</div>' +
-          '<div class="inv-item-actions">' +
-            (canUse
-              ? '<button type="button" class="btn btn-sm" data-use-item="backpack|' + escapeHtml(id) + '">Usa</button>'
-              : '<span class="badge badge-step">Solo Opzioni</span>') +
+        '<div class="inv-item-card">' +
+          '<div class="inv-item-row">' +
+            '<div class="inv-item-info">' +
+              '<span class="inv-item-title-line"><strong>' + escapeHtml(itemIcon + def.name) + '</strong> <span class="item-qty">×' + S.formatNumber(qty) + '</span> · <span class="weight-text">' + S.formatNumber(lineW) + ' pt.</span></span>' +
+              '<span class="inv-item-sub">' + escapeHtml(def.description) + '</span>' +
+            '</div>' +
+            '<div class="inv-item-actions">' +
+              (canUse
+                ? '<button type="button" class="btn btn-sm" data-use-item="backpack|' + escapeHtml(id) + '">Usa</button>'
+                : '<span class="badge badge-step">Solo Opzioni</span>') +
+            '</div>' +
           '</div>' +
         '</div>'
       );
@@ -423,13 +436,12 @@
 
   function renderLastShotBox(lastShot) {
     if (!lastShot) {
-      return '<div class="last-shot-box last-shot-idle">' + icon('tabs', 'mission') + ' Ultimo sparo: In attesa del primo colpo</div>';
+      return '';
     }
     if (lastShot.hit) {
-      var lvNote = lastShot.leveledUp ? ' · ' + icon('stats', 'exp') + ' LEVEL UP (Liv. ' + S.formatNumber(lastShot.newLevel) + ')' : '';
-      return '<div class="last-shot-box last-shot-hit">' + icon('tabs', 'mission') + ' Ultimo sparo (T' + S.formatNumber(lastShot.turn) + '): Colpo a segno! (-1 Alieno, +' + S.formatNumber(lastShot.expAdded) + ' ' + icon('stats', 'exp') + ' EXP' + lvNote + ')</div>';
+      return '<div class="last-shot-box last-shot-hit">🎯 Colpo a segno!</div>';
     }
-    return '<div class="last-shot-box last-shot-miss">💨 Ultimo sparo (T' + S.formatNumber(lastShot.turn) + '): Colpo mancato (MISS)</div>';
+    return '<div class="last-shot-box last-shot-miss">💨 Colpo mancato!</div>';
   }
 
   function renderMissionTab(container) {
@@ -455,9 +467,8 @@
         );
       } else if (ammoLeft > 0) {
         actionHtml = (
-          '<button type="button" class="btn btn-primary btn-combat-big" id="btn-shoot-alien">' + icon('equip', 'rifle') + ' SPARA (-1 ' + icon('stats', 'ammo') + ' Munizione)</button>' +
-          lastShotHtml +
-          '<p class="section-subtitle" style="margin-top:8px;">Sequenza turno: Status → Meteo → Contrattacco (' + S.formatNumber(mCfg ? mCfg.enemyDamage : 1) + ' danni base, ' + icon('equip', 'suit') + ' Tuta -1 Dd) → +1 Turno → Check JustTanked &amp; Colpo (8,3% miss · se a segno: -1 Alieno, +1 ' + icon('stats', 'exp') + ' EXP).</p>'
+          '<button type="button" class="btn btn-primary btn-combat-big" id="btn-shoot-alien">SPARA</button>' +
+          lastShotHtml
         );
       } else {
         actionHtml = (
@@ -465,24 +476,6 @@
           '<p class="section-subtitle notice-danger" style="margin-bottom:10px;"><strong>' + icon('stats', 'ammo') + ' Munizioni esaurite!</strong> Usa un Caricatore Standard nello Zaino oppure tenta la fuga d\'emergenza (tiro 1d20, serve almeno 18; in caso di successo perdi il 30% dell\'EXP attuale, altrimenti subisci il contrattacco).</p>' +
           '<button type="button" class="btn btn-danger btn-combat-big" id="btn-escape-mission">FUGGI (Tira 1d20 — serve ≥ 18)</button>'
         );
-      }
-
-      var logHtml = '';
-      if (!ms.log || ms.log.length === 0) {
-        logHtml = '<p class="section-subtitle">Nessuna azione registrata.</p>';
-      } else {
-        logHtml = '<div class="combat-log">';
-        var li, entry;
-        for (li = 0; li < ms.log.length; li += 1) {
-          entry = ms.log[li];
-          logHtml += (
-            '<div class="combat-log-entry">' +
-              '<span class="combat-log-turn">[T' + S.formatNumber(entry.turn) + ']</span>' +
-              '<span>' + escapeHtml(entry.text) + '</span>' +
-            '</div>'
-          );
-        }
-        logHtml += '</div>';
       }
 
       container.innerHTML = (
@@ -513,24 +506,20 @@
           '</div>' +
           '<div class="panel">' +
             '<div class="panel-title">' +
-              '<span>' + icon('modules', 'backpack') + ' Zaino Rapido (Non avanza il turno)</span>' +
+              '<span>' + icon('modules', 'backpack') + ' Zaino</span>' +
               '<span class="weight-text">' + S.formatNumber(bpUsed) + ' / ' + S.formatNumber(bpMax) + ' pt.</span>' +
             '</div>' +
             renderMissionBackpackItems() +
           '</div>' +
         '</div>' +
         '<div class="panel">' +
-          '<div class="panel-title"><span>' + icon('stats', 'shield') + ' Equipaggiamento Attivo</span><span class="badge badge-cyan">Usura Dd in Tempo Reale</span></div>' +
+          '<div class="panel-title"><span>' + icon('stats', 'shield') + ' Equipaggiamento</span></div>' +
           '<div class="grid-4">' +
             renderEquipSlotCard('helmet', false) +
             renderEquipSlotCard('suit', false) +
             renderEquipSlotCard('boots', false) +
             renderEquipSlotCard('rifle', false) +
           '</div>' +
-        '</div>' +
-        '<div class="panel">' +
-          '<div class="panel-title"><span>' + icon('modules', 'recap') + ' Registro Tattico</span><span class="badge badge-cyan">' + icon('stats', 'exp') + ' EXP ottenuta: +' + S.formatNumber(ms.expGained) + '</span></div>' +
-          logHtml +
         '</div>'
       );
       return;
@@ -569,12 +558,17 @@
             '<div class="inv-item-row"><span>Alieni da abbattere</span><strong class="mono">' + formatAliensRange(m) + '</strong></div>' +
             '<div class="inv-item-row"><span>Danno base nemico</span><strong class="mono">' + S.formatNumber(m.enemyDamage) + ' / turno</strong></div>' +
             '<div class="inv-item-row"><span>' + icon('stats', 'credits') + ' Ricompensa base</span><strong class="mono val-credits">' + S.formatNumber(m.creditsReward) + ' Crediti</strong></div>' +
-            '<div class="inv-item-row"><span>' + icon('modules', 'backpack') + ' Peso Zaino caricato</span><span class="weight-text">' + S.formatNumber(bpTotal) + ' / ' + S.formatNumber(bpCap) + ' pt.</span></div>' +
+            '<button type="button" class="inv-item-row inv-item-row-clickable" id="btn-open-prep-backpack"><span>' + icon('modules', 'backpack') + ' Zaino</span><span class="weight-text">' + S.formatNumber(bpTotal) + ' / ' + S.formatNumber(bpCap) + ' pt.</span></button>' +
             '<div class="inv-item-row"><span>' + icon('stats', 'ammo') + ' Munizioni pronte</span><strong class="mono val-ammo">' + S.formatNumber(S.state.backpack.ammo) + '</strong></div>' +
           '</div>' +
-          '<div class="btn-row" style="margin-top:14px;">' +
-            '<button type="button" class="btn btn-ghost" id="btn-cancel-mission">Annulla → ' + icon('tabs', 'ship') + ' Nave Spaziale</button>' +
-            '<button type="button" class="btn btn-primary" id="btn-start-mission">' + icon('tabs', 'mission') + ' Inizia Missione</button>' +
+          '<div class="briefing-actions">' +
+            '<div class="briefing-cancel-col">' +
+              '<button type="button" class="btn btn-ghost" id="btn-cancel-mission-ship">Annulla → ' + icon('tabs', 'ship') + ' Nave Spaziale</button>' +
+              '<button type="button" class="btn btn-ghost" id="btn-cancel-mission-map">Annulla → ' + icon('tabs', 'map') + ' Mappa</button>' +
+            '</div>' +
+            '<div class="briefing-start-col">' +
+              '<button type="button" class="btn btn-primary" id="btn-start-mission">' + icon('tabs', 'mission') + ' Inizia Missione</button>' +
+            '</div>' +
           '</div>' +
         '</div>' +
         '<div class="panel">' +
@@ -583,7 +577,7 @@
         '</div>' +
       '</div>' +
       '<div class="panel">' +
-        '<div class="panel-title"><span>' + icon('stats', 'shield') + ' Equipaggiamento Attivo per la Missione</span></div>' +
+        '<div class="panel-title"><span>' + icon('stats', 'shield') + ' Equipaggiamento per la missione</span></div>' +
         '<div class="grid-4">' +
           renderEquipSlotCard('helmet', false) +
           renderEquipSlotCard('suit', false) +
@@ -644,10 +638,11 @@
     }
     var isBackpack = sourceKey === 'backpack';
     var moveDir = isBackpack ? 'toCargo' : 'toBackpack';
-    var moveLabel = isBackpack ? '→ ' + icon('modules', 'cargo') + ' Stiva' : '← ' + icon('modules', 'backpack') + ' Zaino';
+    var destText = isBackpack ? icon('modules', 'cargo') + ' Stiva' : icon('modules', 'backpack') + ' Zaino';
+    var destFree = isBackpack ? S.getCargoFreeWeight() : S.getBackpackFreeWeight();
 
     var html = '<div class="inv-item-list">';
-    var i, id, qty, def, lineWeight, useBtnHtml, itemIcon;
+    var i, id, qty, def, lineWeight, useBtnHtml, itemIcon, isOpen, maxFit, maxMovable, curQty, hasStep10, pickerHtml;
     for (i = 0; i < keys.length; i += 1) {
       id = keys[i];
       qty = S.toInt(itemsMap[id], 0);
@@ -663,19 +658,55 @@
         useBtnHtml = '<button type="button" class="btn btn-sm" data-use-item="' + sourceKey + '|' + escapeHtml(id) + '">Usa</button>';
       }
 
+      isOpen = Boolean(transferPicker && transferPicker.source === sourceKey && transferPicker.itemId === id);
+      pickerHtml = '';
+      if (isOpen) {
+        maxFit = def.weight === 0 ? qty : Math.floor(destFree / def.weight);
+        maxMovable = Math.min(qty, maxFit);
+        if (maxMovable <= 0) {
+          curQty = 0;
+        } else {
+          curQty = S.clampInt(transferPicker.qty, 1, maxMovable, 1);
+          transferPicker.qty = curQty;
+        }
+        hasStep10 = qty > 10;
+
+        pickerHtml = (
+          '<div class="transfer-picker">' +
+            '<div class="transfer-picker-head">' +
+              '<span>Sposta in ' + destText + ':</span>' +
+              (maxMovable > 0
+                ? '<span class="weight-text" data-transfer-weight="1">' + S.formatNumber(curQty * def.weight) + ' pt.</span>'
+                : '<span class="badge badge-danger">Spazio insufficiente</span>') +
+            '</div>' +
+            '<div class="transfer-picker-grid' + (hasStep10 ? ' has-step10' : '') + '">' +
+              (hasStep10 ? '<button type="button" class="btn btn-ghost btn-sm" data-transfer-delta="-10"' + (maxMovable <= 0 ? ' disabled' : '') + '>-10</button>' : '') +
+              '<button type="button" class="btn btn-ghost btn-sm" data-transfer-delta="-1"' + (maxMovable <= 0 ? ' disabled' : '') + '>-1</button>' +
+              '<input type="number" class="transfer-qty-input" min="' + (maxMovable > 0 ? 1 : 0) + '" max="' + maxMovable + '" value="' + curQty + '" data-transfer-input="1" aria-label="Quantità da spostare"' + (maxMovable <= 0 ? ' disabled' : '') + '>' +
+              '<button type="button" class="btn btn-ghost btn-sm" data-transfer-delta="1"' + (maxMovable <= 0 ? ' disabled' : '') + '>+1</button>' +
+              (hasStep10 ? '<button type="button" class="btn btn-ghost btn-sm" data-transfer-delta="10"' + (maxMovable <= 0 ? ' disabled' : '') + '>+10</button>' : '') +
+              '<button type="button" class="btn btn-ghost btn-sm" data-transfer-delta="max"' + (maxMovable <= 0 ? ' disabled' : '') + '>Max</button>' +
+            '</div>' +
+            '<div class="transfer-picker-actions">' +
+              '<button type="button" class="btn btn-primary btn-sm" data-transfer-confirm="' + moveDir + '|' + escapeHtml(id) + '"' + (maxMovable <= 0 ? ' disabled' : '') + '>Sposta</button>' +
+              '<button type="button" class="btn btn-ghost btn-sm" data-transfer-cancel="1">Annulla</button>' +
+            '</div>' +
+          '</div>'
+        );
+      }
+
       html += (
-        '<div class="inv-item-row">' +
-          '<div class="inv-item-info">' +
-            '<span><strong>' + escapeHtml(itemIcon + def.name) + '</strong> ×' + S.formatNumber(qty) + ' · <span class="weight-text">' + S.formatNumber(lineWeight) + ' pt.</span></span>' +
-            '<span class="inv-item-sub">' + escapeHtml(def.description) + '</span>' +
+        '<div class="inv-item-card">' +
+          '<div class="inv-item-row">' +
+            '<div class="inv-item-info inv-item-clickable" data-toggle-transfer="' + sourceKey + '|' + escapeHtml(id) + '" title="Clicca per spostare">' +
+              '<span class="inv-item-title-line"><strong>' + escapeHtml(itemIcon + def.name) + '</strong> <span class="item-qty">×' + S.formatNumber(qty) + '</span> · <span class="weight-text">' + S.formatNumber(lineWeight) + ' pt.</span></span>' +
+              '<span class="inv-item-sub">' + escapeHtml(def.description) + '</span>' +
+            '</div>' +
+            '<div class="inv-item-actions">' +
+              useBtnHtml +
+            '</div>' +
           '</div>' +
-          '<div class="inv-item-actions">' +
-            useBtnHtml +
-            '<button type="button" class="btn btn-ghost btn-sm" data-move-item="' + moveDir + '|' + escapeHtml(id) + '|1">' + moveLabel + '</button>' +
-            (qty > 1
-              ? '<button type="button" class="btn btn-ghost btn-sm" data-move-item="' + moveDir + '|' + escapeHtml(id) + '|all">Tutti</button>'
-              : '') +
-          '</div>' +
+          pickerHtml +
         '</div>'
       );
     }
@@ -683,7 +714,7 @@
     return html;
   }
 
-  function renderShipTab(container) {
+  function renderBackpackCargoSection() {
     var bpItemsW = S.getBackpackItemsWeight();
     var bpAmmoW = S.getBackpackAmmoWeight();
     var bpTotalW = S.getBackpackTotalWeight();
@@ -694,8 +725,59 @@
     var cargoItemsW = S.getCargoItemsWeight();
     var cargoMaxW = S.getCargoMaxWeight();
     var cargoPct = percentInt(cargoItemsW, cargoMaxW);
-    var upgInfo = S.getCargoUpgradeInfo();
 
+    return (
+      '<div class="grid-2">' +
+        '<div class="panel">' +
+          '<div class="panel-title">' +
+            '<span>' + icon('modules', 'backpack') + ' Zaino (Equipaggiato in Missione)</span>' +
+            '<span class="weight-text">' + S.formatNumber(bpTotalW) + ' / ' + S.formatNumber(bpMaxW) + ' pt.</span>' +
+          '</div>' +
+          '<div class="progress-track" style="height:9px; margin-bottom:8px;">' +
+            '<div class="progress-fill fill-ammo" style="width:' + bpAmmoPct + '%" title="Munizioni"></div>' +
+            '<div class="progress-fill fill-items" style="width:' + bpItemsPct + '%" title="Oggetti"></div>' +
+          '</div>' +
+          '<div class="mission-option-meta">' +
+            '<span>' + icon('stats', 'ammo') + ' Munizioni: <strong class="val-ammo">' + S.formatNumber(S.state.backpack.ammo) + '</strong> (<span class="weight-text">' + S.formatNumber(bpAmmoW) + ' pt.</span>)</span>' +
+            '<span>Oggetti: <span class="weight-text">' + S.formatNumber(bpItemsW) + ' pt.</span></span>' +
+          '</div>' +
+          '<div class="ammo-transfer-bar">' +
+            '<span class="ammo-transfer-label">Sposta ' + icon('stats', 'ammo') + ' Munizioni → ' + icon('modules', 'cargo') + ' Stiva:</span>' +
+            '<div class="btn-row" style="gap:6px;">' +
+              '<button type="button" class="btn btn-ghost btn-sm" data-transfer-ammo="toCargo|10">-10</button>' +
+              '<button type="button" class="btn btn-ghost btn-sm" data-transfer-ammo="toCargo|30">-30</button>' +
+              '<button type="button" class="btn btn-ghost btn-sm" data-transfer-ammo="toCargo|max">Tutte</button>' +
+            '</div>' +
+          '</div>' +
+          renderInventoryList('backpack', S.state.backpack.items, 'Nessun oggetto nello Zaino.') +
+        '</div>' +
+        '<div class="panel">' +
+          '<div class="panel-title">' +
+            '<span>' + icon('modules', 'cargo') + ' Stiva (Riserva della Nave)</span>' +
+            '<span class="weight-text">' + S.formatNumber(cargoItemsW) + ' / ' + S.formatNumber(cargoMaxW) + ' pt.</span>' +
+          '</div>' +
+          '<div class="progress-track" style="height:9px; margin-bottom:8px;">' +
+            '<div class="progress-fill fill-items" style="width:' + cargoPct + '%"></div>' +
+          '</div>' +
+          '<div class="mission-option-meta">' +
+            '<span>' + icon('stats', 'ammo') + ' Munizioni in Stiva: <strong class="val-ammo">' + S.formatNumber(S.state.cargo.ammo) + '</strong> (<span class="weight-text">Capienza ∞</span>)</span>' +
+          '</div>' +
+          '<div class="ammo-transfer-bar">' +
+            '<span class="ammo-transfer-label">Trasferisci ' + icon('stats', 'ammo') + ' Munizioni → ' + icon('modules', 'backpack') + ' Zaino:</span>' +
+            '<div class="btn-row" style="gap:6px;">' +
+              '<button type="button" class="btn btn-ghost btn-sm" data-transfer-ammo="toBackpack|10">+10</button>' +
+              '<button type="button" class="btn btn-ghost btn-sm" data-transfer-ammo="toBackpack|30">+30</button>' +
+              '<button type="button" class="btn btn-ghost btn-sm" data-transfer-ammo="toBackpack|max">Max</button>' +
+            '</div>' +
+          '</div>' +
+          renderInventoryList('cargo', S.state.cargo.items, 'Stiva oggetti vuota.') +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderShipTab(container) {
+    var upgInfo = S.getCargoUpgradeInfo();
     var regenRem = S.getCooldownRemaining('regen');
     var supplyRem = S.getCooldownRemaining('supply');
     var hasRecap = Boolean(S.state.lastMissionRecap);
@@ -753,56 +835,11 @@
         '</div>' +
         renderStorageEquipSection() +
       '</div>' +
+      renderBackpackCargoSection() +
       '<div class="grid-2">' +
         '<div class="panel">' +
           '<div class="panel-title">' +
-            '<span>' + icon('modules', 'backpack') + ' Zaino (Equipaggiato in Missione)</span>' +
-            '<span class="weight-text">' + S.formatNumber(bpTotalW) + ' / ' + S.formatNumber(bpMaxW) + ' pt.</span>' +
-          '</div>' +
-          '<div class="progress-track" style="height:9px; margin-bottom:8px;">' +
-            '<div class="progress-fill fill-ammo" style="width:' + bpAmmoPct + '%" title="Munizioni"></div>' +
-            '<div class="progress-fill fill-items" style="width:' + bpItemsPct + '%" title="Oggetti"></div>' +
-          '</div>' +
-          '<div class="mission-option-meta">' +
-            '<span>' + icon('stats', 'ammo') + ' Munizioni: <strong class="val-ammo">' + S.formatNumber(S.state.backpack.ammo) + '</strong> (<span class="weight-text">' + S.formatNumber(bpAmmoW) + ' pt.</span>)</span>' +
-            '<span>Oggetti: <span class="weight-text">' + S.formatNumber(bpItemsW) + ' pt.</span></span>' +
-          '</div>' +
-          '<div class="ammo-transfer-bar">' +
-            '<span class="ammo-transfer-label">Sposta ' + icon('stats', 'ammo') + ' Munizioni → ' + icon('modules', 'cargo') + ' Stiva:</span>' +
-            '<div class="btn-row" style="gap:6px;">' +
-              '<button type="button" class="btn btn-ghost btn-sm" data-transfer-ammo="toCargo|10">-10</button>' +
-              '<button type="button" class="btn btn-ghost btn-sm" data-transfer-ammo="toCargo|30">-30</button>' +
-              '<button type="button" class="btn btn-ghost btn-sm" data-transfer-ammo="toCargo|max">Tutte</button>' +
-            '</div>' +
-          '</div>' +
-          renderInventoryList('backpack', S.state.backpack.items, 'Nessun oggetto nello Zaino.') +
-        '</div>' +
-        '<div class="panel">' +
-          '<div class="panel-title">' +
-            '<span>' + icon('modules', 'cargo') + ' Stiva (Riserva della Nave)</span>' +
-            '<span class="weight-text">' + S.formatNumber(cargoItemsW) + ' / ' + S.formatNumber(cargoMaxW) + ' pt.</span>' +
-          '</div>' +
-          '<div class="progress-track" style="height:9px; margin-bottom:8px;">' +
-            '<div class="progress-fill fill-items" style="width:' + cargoPct + '%"></div>' +
-          '</div>' +
-          '<div class="mission-option-meta">' +
-            '<span>' + icon('stats', 'ammo') + ' Munizioni in Stiva: <strong class="val-ammo">' + S.formatNumber(S.state.cargo.ammo) + '</strong> (<span class="weight-text">Capienza ∞</span>)</span>' +
-          '</div>' +
-          '<div class="ammo-transfer-bar">' +
-            '<span class="ammo-transfer-label">Trasferisci ' + icon('stats', 'ammo') + ' Munizioni → ' + icon('modules', 'backpack') + ' Zaino:</span>' +
-            '<div class="btn-row" style="gap:6px;">' +
-              '<button type="button" class="btn btn-ghost btn-sm" data-transfer-ammo="toBackpack|10">+10</button>' +
-              '<button type="button" class="btn btn-ghost btn-sm" data-transfer-ammo="toBackpack|30">+30</button>' +
-              '<button type="button" class="btn btn-ghost btn-sm" data-transfer-ammo="toBackpack|max">Max</button>' +
-            '</div>' +
-          '</div>' +
-          renderInventoryList('cargo', S.state.cargo.items, 'Stiva oggetti vuota.') +
-        '</div>' +
-      '</div>' +
-      '<div class="grid-2">' +
-        '<div class="panel">' +
-          '<div class="panel-title">' +
-            '<span>' + icon('modules', 'upgrades') + ' Ricerca &amp; Potenziamenti Nave</span>' +
+            '<span>' + icon('modules', 'upgrades') + ' Potenziamenti Nave</span>' +
             '<span class="badge badge-cyan">Stiva Lv. ' + S.formatNumber(upgInfo.level) + ' / ' + S.formatNumber(upgInfo.maxLevel) + '</span>' +
           '</div>' +
           '<p class="section-subtitle" style="margin-bottom:10px;">Espandi la capienza degli oggetti nella Stiva di <span class="weight-text">+100 pt.</span> per livello (attuale: <span class="weight-text">' + S.formatNumber(upgInfo.currentMaxWeight) + ' pt.</span>' + (upgInfo.isMaxed ? ' · MASSIMO' : ' → <span class="weight-text">' + S.formatNumber(upgInfo.nextMaxWeight) + ' pt.</span>') + ').</p>' +
@@ -813,9 +850,12 @@
           '</button>' +
         '</div>' +
         '<div class="panel">' +
-          '<div class="panel-title"><span>' + icon('modules', 'library') + ' Biblioteca di Bordo (Libri)</span><span class="badge badge-step">Step 5</span></div>' +
+          '<div class="panel-title"><span>' + icon('modules', 'library') + ' Biblioteca di bordo</span><span class="badge badge-step">Step 5</span></div>' +
           '<p class="section-subtitle">I Libri trovati durante le missioni e le esplorazioni verranno archiviati qui per la lettura integrale e sbloccheranno potenziamenti passivi permanenti.</p>' +
         '</div>' +
+      '</div>' +
+      '<div class="panel">' +
+        '<div class="panel-title"><span>📓 Diario di Bordo</span></div>' +
       '</div>'
     );
   }
@@ -859,7 +899,7 @@
         '<div class="panel">' +
           '<div class="panel-title">' +
             '<span>' + icon('items', 'chip_identita') + ' Cambio Nome Personaggio</span>' +
-            '<span class="weight-text">Chip Cambio Identità: 0 pt. (×' + S.formatNumber(tokenCount) + ')</span>' +
+            '<span>Chip Cambio Identità <span class="item-qty">×' + S.formatNumber(tokenCount) + '</span> · <span class="weight-text">0 pt.</span></span>' +
           '</div>' +
           '<p class="section-subtitle" style="margin-bottom:10px;">Richiede un oggetto consumabile <strong>' + icon('items', 'chip_identita') + ' Chip Cambio Identità</strong> (presente ×1 nella Stiva iniziale). Senza chip il cambio nome resta bloccato.</p>' +
           '<div class="btn-row">' +
@@ -1086,10 +1126,26 @@
     }
   }
 
+  function refreshInventoryViews() {
+    if (activeModalKind === 'backpack_cargo') {
+      var bodyEl = document.getElementById('modal-body');
+      if (bodyEl) {
+        bodyEl.innerHTML = renderBackpackCargoSection();
+      }
+    }
+    renderActiveTab();
+  }
+
   function render() {
     renderHud();
     renderTabs();
     renderActiveTab();
+    if (activeModalKind === 'backpack_cargo') {
+      var bodyEl = document.getElementById('modal-body');
+      if (bodyEl) {
+        bodyEl.innerHTML = renderBackpackCargoSection();
+      }
+    }
   }
 
   function handleCopySave() {
@@ -1135,6 +1191,7 @@
     } else {
       importFeedback = { text: '', ok: true };
       renameFeedback = { text: '', ok: true };
+      transferPicker = null;
       renderActiveTab();
     }
   }
@@ -1147,6 +1204,123 @@
       openRepairTargetModal(res);
     } else {
       showToast(res.message, 'err');
+    }
+  }
+
+  function getTransferPickerLimits(source, itemId) {
+    var srcMap = source === 'backpack' ? S.state.backpack.items : S.state.cargo.items;
+    var avail = Math.max(0, S.toInt(srcMap && srcMap[itemId], 0));
+    var def = S.ITEMS[itemId];
+    if (!def || avail <= 0) {
+      return { avail: 0, maxMovable: 0, weight: 0 };
+    }
+    var destFree = source === 'backpack' ? S.getCargoFreeWeight() : S.getBackpackFreeWeight();
+    var maxFit = def.weight === 0 ? avail : Math.floor(destFree / def.weight);
+    return {
+      avail: avail,
+      maxMovable: Math.min(avail, maxFit),
+      weight: def.weight
+    };
+  }
+
+  function handleInventoryAreaClick(e) {
+    var navBtn = e.target.closest('[data-nav-tab]');
+    if (navBtn) {
+      var targetTab = navBtn.getAttribute('data-nav-tab');
+      if (activeModalKind) {
+        closeModal();
+      }
+      var navRes = S.setActiveTab(targetTab);
+      if (!navRes.ok) {
+        showToast(navRes.message, 'err');
+      }
+      return true;
+    }
+
+    var ammoBtn = e.target.closest('[data-transfer-ammo]');
+    if (ammoBtn) {
+      var ammoParts = ammoBtn.getAttribute('data-transfer-ammo').split('|');
+      var ammoRes = S.transferAmmo(ammoParts[0], ammoParts[1]);
+      showToast(ammoRes.message, ammoRes.ok ? 'ok' : 'err');
+      return true;
+    }
+
+    var useBtn = e.target.closest('[data-use-item]');
+    if (useBtn) {
+      var uParts = useBtn.getAttribute('data-use-item').split('|');
+      handleUseItemClick(uParts[0], uParts[1]);
+      return true;
+    }
+
+    var toggleEl = e.target.closest('[data-toggle-transfer]');
+    if (toggleEl) {
+      var tParts = toggleEl.getAttribute('data-toggle-transfer').split('|');
+      var src = tParts[0];
+      var itemId = tParts[1];
+      if (transferPicker && transferPicker.source === src && transferPicker.itemId === itemId) {
+        transferPicker = null;
+      } else {
+        transferPicker = { source: src, itemId: itemId, qty: 1 };
+      }
+      refreshInventoryViews();
+      return true;
+    }
+
+    var deltaBtn = e.target.closest('[data-transfer-delta]');
+    if (deltaBtn && transferPicker) {
+      var lim = getTransferPickerLimits(transferPicker.source, transferPicker.itemId);
+      if (lim.maxMovable <= 0) {
+        return true;
+      }
+      var deltaAttr = deltaBtn.getAttribute('data-transfer-delta');
+      if (deltaAttr === 'max') {
+        transferPicker.qty = lim.maxMovable;
+      } else {
+        var delta = S.toInt(deltaAttr, 0);
+        transferPicker.qty = S.clampInt(transferPicker.qty + delta, 1, lim.maxMovable, 1);
+      }
+      refreshInventoryViews();
+      return true;
+    }
+
+    var confirmBtn = e.target.closest('[data-transfer-confirm]');
+    if (confirmBtn && transferPicker) {
+      var cParts = confirmBtn.getAttribute('data-transfer-confirm').split('|');
+      var limConf = getTransferPickerLimits(transferPicker.source, transferPicker.itemId);
+      var qtyToMove = limConf.maxMovable > 0 ? S.clampInt(transferPicker.qty, 1, limConf.maxMovable, 1) : 1;
+      transferPicker = null;
+      var moveRes = S.transferItem(cParts[1], cParts[0], qtyToMove);
+      showToast(moveRes.message, moveRes.ok ? 'ok' : 'err');
+      return true;
+    }
+
+    if (e.target.closest('[data-transfer-cancel]')) {
+      transferPicker = null;
+      refreshInventoryViews();
+      return true;
+    }
+
+    return false;
+  }
+
+  function handleInventoryAreaInput(e) {
+    var inputEl = e.target.closest('[data-transfer-input]');
+    if (!inputEl || !transferPicker) {
+      return;
+    }
+    var lim = getTransferPickerLimits(transferPicker.source, transferPicker.itemId);
+    if (lim.maxMovable <= 0) {
+      transferPicker.qty = 0;
+      inputEl.value = '0';
+      return;
+    }
+    var typed = S.toInt(inputEl.value, 1);
+    var clamped = S.clampInt(typed, 1, lim.maxMovable, 1);
+    transferPicker.qty = clamped;
+    var pickerEl = inputEl.closest('.transfer-picker');
+    var weightEl = pickerEl ? pickerEl.querySelector('[data-transfer-weight]') : null;
+    if (weightEl) {
+      weightEl.textContent = S.formatNumber(clamped * lim.weight) + ' pt.';
     }
   }
 
@@ -1171,21 +1345,32 @@
       return;
     }
 
-    var navBtn = e.target.closest('[data-nav-tab]');
-    if (navBtn) {
-      var targetTab = navBtn.getAttribute('data-nav-tab');
-      var navRes = S.setActiveTab(targetTab);
-      if (!navRes.ok) {
-        showToast(navRes.message, 'err');
+    if (handleInventoryAreaClick(e)) {
+      return;
+    }
+
+    // Step 3: Mission & Briefing actions
+    if (e.target.closest('#btn-open-prep-backpack')) {
+      transferPicker = null;
+      openModal('Preparazione ' + icon('modules', 'backpack') + ' Zaino', renderBackpackCargoSection(), {
+        wide: true,
+        kind: 'backpack_cargo'
+      });
+      return;
+    }
+
+    if (e.target.closest('#btn-cancel-mission-ship')) {
+      var cancelShipRes = S.cancelSelectedMission('ship');
+      if (!cancelShipRes.ok) {
+        showToast(cancelShipRes.message, 'err');
       }
       return;
     }
 
-    // Step 3: Mission actions
-    if (e.target.closest('#btn-cancel-mission')) {
-      var cancelRes = S.cancelSelectedMission();
-      if (!cancelRes.ok) {
-        showToast(cancelRes.message, 'err');
+    if (e.target.closest('#btn-cancel-mission-map')) {
+      var cancelMapRes = S.cancelSelectedMission('map');
+      if (!cancelMapRes.ok) {
+        showToast(cancelMapRes.message, 'err');
       }
       return;
     }
@@ -1251,29 +1436,6 @@
     if (e.target.closest('#btn-supply-capsule')) {
       var supRes = S.claimSupplyCapsule();
       showToast(supRes.message, supRes.ok ? 'ok' : 'err');
-      return;
-    }
-
-    var ammoBtn = e.target.closest('[data-transfer-ammo]');
-    if (ammoBtn) {
-      var ammoParts = ammoBtn.getAttribute('data-transfer-ammo').split('|');
-      var ammoRes = S.transferAmmo(ammoParts[0], ammoParts[1]);
-      showToast(ammoRes.message, ammoRes.ok ? 'ok' : 'err');
-      return;
-    }
-
-    var moveBtn = e.target.closest('[data-move-item]');
-    if (moveBtn) {
-      var mParts = moveBtn.getAttribute('data-move-item').split('|');
-      var mRes = S.transferItem(mParts[1], mParts[0], mParts[2]);
-      showToast(mRes.message, mRes.ok ? 'ok' : 'err');
-      return;
-    }
-
-    var useBtn = e.target.closest('[data-use-item]');
-    if (useBtn) {
-      var uParts = useBtn.getAttribute('data-use-item').split('|');
-      handleUseItemClick(uParts[0], uParts[1]);
       return;
     }
 
@@ -1355,6 +1517,10 @@
   }
 
   function handleModalBodyClick(e) {
+    if (handleInventoryAreaClick(e)) {
+      return;
+    }
+
     var pickBtn = e.target.closest('[data-repair-pick]');
     if (pickBtn) {
       var parts = pickBtn.getAttribute('data-repair-pick').split('|');
@@ -1390,9 +1556,11 @@
     }
     if (content) {
       content.addEventListener('click', handleContentClick);
+      content.addEventListener('input', handleInventoryAreaInput);
     }
     if (modalBody) {
       modalBody.addEventListener('click', handleModalBodyClick);
+      modalBody.addEventListener('input', handleInventoryAreaInput);
     }
     if (modalCloseBtn) {
       modalCloseBtn.addEventListener('click', closeModal);
