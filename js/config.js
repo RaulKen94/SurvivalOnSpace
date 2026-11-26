@@ -79,6 +79,8 @@
       supply: '🪂',
       backpack: '🎒',
       cargo: '📦',
+      equip: '👤',
+      controls: '🎛️',
       upgrades: '🔬',
       library: '📚',
       recap: '📊',

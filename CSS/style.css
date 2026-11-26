@@ -1194,6 +1194,231 @@ body {
   max-width: 980px;
 }
 
+.modal-card.modal-xl {
+  max-width: 1180px;
+  width: 95vw;
+}
+
+.modal-card.modal-full {
+  max-width: 1380px;
+  width: 96vw;
+}
+
+.modal-close-x {
+  min-width: 34px;
+  min-height: 34px;
+  padding: 4px 10px;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* Cassetto scorrevole Deposito Equipaggiamento */
+.storage-equip-drawer {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-light);
+  max-height: 270px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Sezione Controlli in Opzioni */
+.controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Carosello 4 liste Resoconto Missione */
+.loot-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.loot-toolbar-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-light-soft);
+}
+
+.loot-star-btn.active {
+  background: rgba(253, 224, 71, 0.18);
+  border-color: #fde047;
+  color: #fde047;
+}
+
+.loot-carousel-grid {
+  display: grid;
+  gap: 10px;
+  align-items: stretch;
+}
+
+.loot-carousel-grid.cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.loot-carousel-grid.cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.loot-carousel-grid.cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.loot-col {
+  border-radius: 10px;
+  border: 2px solid var(--border-light);
+  padding: 10px;
+  min-height: 210px;
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+}
+
+.loot-col-ground {
+  background: #4a423b;
+  border-color: #a8a29e;
+}
+
+.loot-col-collected {
+  background: #7c3f18;
+  border-color: #fdba74;
+}
+
+.loot-col-cyan {
+  background: var(--bg-panel);
+  border-color: var(--border-light);
+}
+
+.loot-col.drop-allowed {
+  border-color: #38bdf8;
+  box-shadow: inset 0 0 0 1px rgba(56, 189, 248, 0.5);
+}
+
+.loot-col.drop-over {
+  border-color: #fde047;
+  box-shadow: 0 0 0 2px rgba(253, 224, 71, 0.65);
+}
+
+.loot-col-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+.loot-col-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-light);
+}
+
+.loot-col-sub {
+  font-size: 0.72rem;
+  color: var(--text-light-soft);
+  margin-top: 2px;
+}
+
+.loot-col-weight {
+  font-size: 0.78rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.loot-empty-na {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.loot-items-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.loot-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 7px 9px;
+  border-radius: 7px;
+  background: var(--cream);
+  border: 1px solid var(--cream-border);
+  color: var(--text-dark);
+  font-size: 0.8rem;
+  cursor: grab;
+  user-select: none;
+}
+
+.loot-item-row[data-loot-toggle-dest],
+.loot-item-row[data-loot-restore] {
+  cursor: pointer;
+}
+
+.loot-item-row.loot-item-drop {
+  background: #ffedd5;
+  border-color: #ea580c;
+  border-left-width: 4px;
+}
+
+.loot-item-row.dragging {
+  opacity: 0.55;
+}
+
+.loot-item-main {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.loot-item-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 3px 5px;
+}
+
+.loot-item-dest {
+  font-size: 0.73rem;
+  font-weight: 700;
+  color: var(--text-dark-muted);
+}
+
+.loot-split-btn {
+  min-width: 30px;
+  min-height: 28px;
+  padding: 2px 7px;
+  background: var(--cream-alt);
+  border-color: #c2410c;
+  color: #9a3412;
+}
+
+.loot-split-btn:hover:not(:disabled) {
+  background: #fed7aa;
+  border-color: #9a3412;
+  color: #7c2d12;
+}
+
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -1382,6 +1607,10 @@ body {
   .grid-4 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .loot-carousel-grid.cols-3,
+  .loot-carousel-grid.cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .module-grid,
   .storage-equip-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1411,6 +1640,9 @@ body {
   }
   .grid-2,
   .grid-4,
+  .loot-carousel-grid.cols-2,
+  .loot-carousel-grid.cols-3,
+  .loot-carousel-grid.cols-4,
   .module-grid,
   .storage-equip-grid,
   .stats-grid,
